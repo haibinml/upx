@@ -7661,6 +7661,10 @@ void PackLinuxElf64::un_DT_INIT(
                 Elf64_Rela *rp = (Elf64_Rela *)elf_find_dynamic(dyn_null->d_val);
                 dyn_null->d_val = 0;
                 if (rp) {
+                    if ((char *)rp + sizeof(Elf64_Rela) > (char *)&file_image[0] + file_size_u)
+                        throwCantUnpack("bad DT_INIT_ARRAY relocation offset");
+                    if ((char *)&dynsym[1] > (char *)&file_image[0] + file_size_u)
+                        throwCantUnpack("bad dynsym for DT_INIT_ARRAY");
                     // Compressor saved the original *rp in dynsym[0]
                     Elf64_Rela *rp_unc = (Elf64_Rela *)&dynsym[0];  // pointer
                     rp->r_info = rp_unc->r_info;  // restore original r_info; r_offset not touched
