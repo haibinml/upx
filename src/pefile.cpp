@@ -2788,9 +2788,23 @@ void PeFile::rebuildRelocs(SPAN_S(byte) & extra_info, unsigned bits, unsigned fl
         return;
     }
 
-    const unsigned orig_crelocs = mem_size(1, get_le32(extra_info));
-    const byte big = extra_info[4];
-    extra_info += 5;
+    // Comments at end of this file say that compressed relocs are optional.
+    // Try to detect their presence.  There might be no compressed relocs.
+#if WITH_XSPAN >= 2
+    const unsigned headway = extra_info.size_bytes();
+#else
+    const unsigned headway = 5;
+#endif
+    unsigned orig_crelocs = 0;
+    byte big = 0;
+    if (headway >= 4) {
+        orig_crelocs = mem_size(1, get_le32(extra_info));
+        extra_info += 4;
+        if (headway >= 5) {
+            big = extra_info[0];
+            extra_info += 1;
+        }
+    }
 
     SPAN_S_VAR(const byte, rdata, obuf + orig_crelocs, obuf);
     MemBuffer mb_wrkmem;
@@ -2835,6 +2849,7 @@ void PeFile::rebuildRelocs(SPAN_S(byte) & extra_info, unsigned bits, unsigned fl
     mb_wrkmem.dealloc();
 
     ODSIZE(PEDIR_BASERELOC) = soxrelocs;
+    // FIXME?:  ODADDR(PEDIR_BASERELOC) for compressed relocs?
 }
 
 void PeFile::rebuildExports() {
