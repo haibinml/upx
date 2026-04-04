@@ -350,8 +350,6 @@ static int getoptvar(upx::OptVar<T, default_value, min_value, max_value> *var,
 }
 
 static int do_option(int optc, const char *arg) {
-    int i = 0;
-
     switch (optc) {
 #if 0
     // FIXME: to_stdout doesn't work because of console code mess
@@ -811,7 +809,6 @@ static int do_option(int optc, const char *arg) {
         return -3;
     }
 
-    UNUSED(i);
     return 0;
 }
 

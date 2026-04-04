@@ -105,7 +105,8 @@ jobs:
         cppflags:
           - -DWITH_XSPAN=0
           - -DWITH_XSPAN=1
-          - -DWITH_XSPAN=2
+          - -DWITH_XSPAN=2 -DXSPAN_CONFIG_ENABLE_DEBUG=0
+          # -DWITH_XSPAN=2 -DXSPAN_CONFIG_ENABLE_DEBUG=1
           - -DDOCTEST_CONFIG_DISABLE
           - -DUPX_CONFIG_USE_STABLE_SORT
     runs-on: ubuntu-latest
@@ -134,6 +135,8 @@ jobs:
       - run: set -x; $CC --version; $CXX --version
       - run: $CC  -E -x c   -dM /dev/null
       - run: $CXX -E -x c++ -dM /dev/null
+      - run: make build/debug
+      - run: make build/release
       - run: make build/debug+test
       - run: make build/release+test
       - name: Run test suite

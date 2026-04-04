@@ -53,6 +53,10 @@ public:
 #endif
 
 private:
+#if XSPAN_CONFIG_ENABLE_DEBUG
+    const char *src_file;
+    int src_line;
+#endif
     pointer ptr; // current view into (base, base+size_in_bytes) iff base != nullptr
     pointer base;
     size_type size_in_bytes;
