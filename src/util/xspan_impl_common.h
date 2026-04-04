@@ -281,10 +281,21 @@ public:
     Self subspan(ptrdiff_t offset, ptrdiff_t count) const {
         pointer p_begin = check_add(ptr, offset);
         pointer p_end = check_add(p_begin, count);
-        if (p_begin <= p_end)
-            return Self(Unchecked, p_begin, (p_end - p_begin) * sizeof(T), p_begin);
-        else
-            return Self(Unchecked, p_end, (p_begin - p_end) * sizeof(T), p_end);
+        if (p_begin <= p_end) {
+            Self r = Self(Unchecked, p_begin, (p_end - p_begin) * sizeof(T), p_begin);
+#if XSPAN_CONFIG_ENABLE_DEBUG
+            r.src_file = src_file;
+            r.src_line = src_line;
+#endif
+            return r;
+        } else {
+            Self r = Self(Unchecked, p_end, (p_begin - p_end) * sizeof(T), p_end);
+#if XSPAN_CONFIG_ENABLE_DEBUG
+            r.src_file = src_file;
+            r.src_line = src_line;
+#endif
+            return r;
+        }
     }
     // subspan (creates a new value)
     Self subspan(ptrdiff_t offset) const { return subspan(offset, size() - offset); }
@@ -294,8 +305,13 @@ public:
     inline CSelf<U> type_cast() const {
         typedef CSelf<U> R;
         typedef typename R::pointer rpointer;
-        return R(R::Unchecked, upx::ptr_static_cast<rpointer>(ptr), size_in_bytes,
-                 upx::ptr_static_cast<rpointer>(base));
+        R r = R(R::Unchecked, upx::ptr_static_cast<rpointer>(ptr), size_in_bytes,
+                upx::ptr_static_cast<rpointer>(base));
+#if XSPAN_CONFIG_ENABLE_DEBUG
+        r.src_file = src_file;
+        r.src_line = src_line;
+#endif
+        return r;
     }
 
     bool operator==(pointer other) const noexcept { return ptr == other; }
@@ -402,11 +418,21 @@ public:
 
     Self operator+(ptrdiff_t n) const {
         pointer first = check_add(ptr, n);
-        return Self(Unchecked, first, size_in_bytes, base);
+        Self r = Self(Unchecked, first, size_in_bytes, base);
+#if XSPAN_CONFIG_ENABLE_DEBUG
+        r.src_file = src_file;
+        r.src_line = src_line;
+#endif
+        return r;
     }
     Self operator-(ptrdiff_t n) const {
         pointer first = check_add(ptr, -n);
-        return Self(Unchecked, first, size_in_bytes, base);
+        Self r = Self(Unchecked, first, size_in_bytes, base);
+#if XSPAN_CONFIG_ENABLE_DEBUG
+        r.src_file = src_file;
+        r.src_line = src_line;
+#endif
+        return r;
     }
 
 private:

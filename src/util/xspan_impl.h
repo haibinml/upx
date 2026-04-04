@@ -42,6 +42,14 @@
 
 XSPAN_NAMESPACE_BEGIN
 
+#if XSPAN_CONFIG_ENABLE_DEBUG
+#define XSPAN_DEBUG_ARGS const char *file, int line,
+#define XSPAN_DEBUG_IMPL src_file(file), src_line(line),
+#else
+#define XSPAN_DEBUG_ARGS /*empty*/
+#define XSPAN_DEBUG_IMPL /*empty*/
+#endif
+
 // HINT: set env-var "UPX_DEBUG_DOCTEST_DISABLE=1" for improved debugging experience
 noreturn void xspan_fail_nullptr() may_throw;
 noreturn void xspan_fail_nullbase() may_throw;
