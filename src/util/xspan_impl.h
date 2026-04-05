@@ -60,7 +60,9 @@ struct XSpanFile final {
         return XSpanFile(f, l);
     }
     forceinline_constexpr XSpanFile() noexcept : src_file(nullptr), src_line(0) {}
-    forceinline_constexpr XSpanFile(const char *f, int l) noexcept : src_file(f), src_line(l) {}
+private:
+    explicit forceinline_constexpr XSpanFile(const char *f, int l) noexcept : src_file(f),
+                                                                              src_line(l) {}
     UPX_CXX_DISABLE_ADDRESS(XSpanFile)
 };
 #define XSpanFileMake() (XSPAN_NS(XSpanFile)(XSPAN_NS(XSpanFile)::make(__FILE__, __LINE__)))

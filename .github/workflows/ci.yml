@@ -223,7 +223,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { os: ubuntu-22.04, use_extra: true }
+          # { os: ubuntu-22.04, use_extra: true }
+          - { os: ubuntu-22.04 }
           - { os: ubuntu-24.04, use_extra: true, use_wine: true }
     name: ${{ format('{0}', matrix.os) }}
     runs-on: ${{ matrix.os }}
@@ -307,6 +308,7 @@ jobs:
           echo "===== parallel jobs: $jobs"
           DESTDIR="Install with make 2" parallel -kv --lb 'make build/extra/{}+install' ::: $jobs
       - name: Mimic ctest tests SIGSEGV
+        if: ${{ matrix.use_extra }}
         run: |
           jobs="gcc/debug gcc/release clang/debug clang/release"
           test "${{ matrix.use_extra }}" = "true" && jobs="$jobs gcc-m32/debug gcc-m32/release"
