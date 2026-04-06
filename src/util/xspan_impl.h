@@ -43,33 +43,34 @@
 XSPAN_NAMESPACE_BEGIN
 
 #if XSPAN_CONFIG_ENABLE_DEBUG
-#define XSPAN_DEBUG_ARGS const XSpanFile &ff,
+#define XSPAN_DEBUG_ARGS const XSpanDebugFile &ff,
 #define XSPAN_DEBUG_IMPL f(ff),
 #define XSPAN_DEBUG_PASS ff,
 #else
-#define XSPAN_DEBUG_ARGS XSpanFile,
+#define XSPAN_DEBUG_ARGS XSpanDebugFile,
 #define XSPAN_DEBUG_IMPL /*empty*/
 #define XSPAN_DEBUG_PASS /*empty*/
 #endif
 
 #if XSPAN_CONFIG_ENABLE_DEBUG
-struct XSpanFile final {
+struct XSpanDebugFile final {
     const char *src_file;
-    int src_line;
-    static forceinline_constexpr XSpanFile make(const char *f, int l) noexcept {
-        return XSpanFile(f, l);
+    size_t src_line;
+    static forceinline_constexpr XSpanDebugFile make(const char *f, size_t l) noexcept {
+        return XSpanDebugFile(f, l);
     }
-    forceinline_constexpr XSpanFile() noexcept : src_file(nullptr), src_line(0) {}
+    forceinline_constexpr XSpanDebugFile() noexcept : src_file(nullptr), src_line(0) {}
 private:
-    explicit forceinline_constexpr XSpanFile(const char *f, int l) noexcept : src_file(f),
-                                                                              src_line(l) {}
-    UPX_CXX_DISABLE_ADDRESS(XSpanFile)
+    explicit forceinline_constexpr XSpanDebugFile(const char *f, size_t l) noexcept : src_file(f),
+                                                                                      src_line(l) {}
+    UPX_CXX_DISABLE_ADDRESS(XSpanDebugFile)
 };
-#define XSpanFileMake() (XSPAN_NS(XSpanFile)(XSPAN_NS(XSpanFile)::make(__FILE__, __LINE__)))
+#define XSpanDebugFileMake()                                                                       \
+    (XSPAN_NS(XSpanDebugFile)(XSPAN_NS(XSpanDebugFile)::make(__FILE__, __LINE__)))
 #else
-struct XSpanFile final {
-    forceinline_constexpr XSpanFile() noexcept {}
-    UPX_CXX_DISABLE_ADDRESS(XSpanFile)
+struct XSpanDebugFile final {
+    forceinline_constexpr XSpanDebugFile() noexcept {}
+    UPX_CXX_DISABLE_ADDRESS(XSpanDebugFile)
 };
 #endif
 

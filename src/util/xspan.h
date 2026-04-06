@@ -92,9 +92,9 @@ using XSPAN_NAMESPACE_NAME::raw_index_bytes; // overloaded for all classes
 
 // create a value
 #if XSPAN_CONFIG_ENABLE_DEBUG
-#define XSPAN_0_MAKE(type, first, ...) (XSPAN_0(type)(XSpanFileMake(), (first), ##__VA_ARGS__))
-#define XSPAN_P_MAKE(type, first, ...) (XSPAN_P(type)(XSpanFileMake(), (first), ##__VA_ARGS__))
-#define XSPAN_S_MAKE(type, first, ...) (XSPAN_S(type)(XSpanFileMake(), (first), ##__VA_ARGS__))
+#define XSPAN_0_MAKE(type, first, ...) (XSPAN_0(type)(XSpanDebugFileMake(), (first), ##__VA_ARGS__))
+#define XSPAN_P_MAKE(type, first, ...) (XSPAN_P(type)(XSpanDebugFileMake(), (first), ##__VA_ARGS__))
+#define XSPAN_S_MAKE(type, first, ...) (XSPAN_S(type)(XSpanDebugFileMake(), (first), ##__VA_ARGS__))
 #else
 #define XSPAN_0_MAKE(type, first, ...) (XSPAN_0(type)((first), ##__VA_ARGS__))
 #define XSPAN_P_MAKE(type, first, ...) (XSPAN_P(type)((first), ##__VA_ARGS__))
@@ -104,11 +104,11 @@ using XSPAN_NAMESPACE_NAME::raw_index_bytes; // overloaded for all classes
 // define a variable
 #if XSPAN_CONFIG_ENABLE_DEBUG
 #define XSPAN_0_VAR(type, var, first, ...)                                                         \
-    XSPAN_0(type) var(XSpanFileMake(), (first), ##__VA_ARGS__)
+    XSPAN_0(type) var(XSpanDebugFileMake(), (first), ##__VA_ARGS__)
 #define XSPAN_P_VAR(type, var, first, ...)                                                         \
-    XSPAN_P(type) var(XSpanFileMake(), (first), ##__VA_ARGS__)
+    XSPAN_P(type) var(XSpanDebugFileMake(), (first), ##__VA_ARGS__)
 #define XSPAN_S_VAR(type, var, first, ...)                                                         \
-    XSPAN_S(type) var(XSpanFileMake(), (first), ##__VA_ARGS__)
+    XSPAN_S(type) var(XSpanDebugFileMake(), (first), ##__VA_ARGS__)
 #else
 #define XSPAN_0_VAR(type, var, first, ...) XSPAN_0(type) var((first), ##__VA_ARGS__)
 #define XSPAN_P_VAR(type, var, first, ...) XSPAN_P(type) var((first), ##__VA_ARGS__)

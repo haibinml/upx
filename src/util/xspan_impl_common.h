@@ -54,7 +54,7 @@ public:
 
 private:
 #if XSPAN_CONFIG_ENABLE_DEBUG
-    XSpanFile f;
+    XSpanDebugFile f;
 #endif
     pointer ptr; // current view into (base, base+size_in_bytes) iff base != nullptr
     pointer base;
