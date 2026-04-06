@@ -49,7 +49,7 @@
 #endif
 // Enable DEBUG.
 #ifndef XSPAN_CONFIG_ENABLE_DEBUG
-#define XSPAN_CONFIG_ENABLE_DEBUG 0
+#define XSPAN_CONFIG_ENABLE_DEBUG 1
 #endif
 
 // actual implementation

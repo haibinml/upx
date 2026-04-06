@@ -109,14 +109,14 @@ public:
     // TODO: use Unchecked to avoid double checks in both constructor and assignment
     template <class U>
     XSPAN_REQUIRES_CONVERTIBLE_R(Self &)
-    operator=(const PtrOrSpan<U> &other) {
+    operator=(const PtrOrSpanOrNull<U> &other) {
         if (other.base == nullptr)
             return assign(Self(other.ptr, size_in_bytes, base));
         return assign(Self(other.ptr, other.size_in_bytes, other.base));
     }
     template <class U>
     XSPAN_REQUIRES_CONVERTIBLE_R(Self &)
-    operator=(const PtrOrSpanOrNull<U> &other) {
+    operator=(const PtrOrSpan<U> &other) {
         if (other.base == nullptr)
             return assign(Self(other.ptr, size_in_bytes, base));
         return assign(Self(other.ptr, other.size_in_bytes, other.base));
