@@ -43,7 +43,7 @@
 XSPAN_NAMESPACE_BEGIN
 
 #if XSPAN_CONFIG_ENABLE_DEBUG
-#define XSPAN_DEBUG_ARGS XSpanFile ff,
+#define XSPAN_DEBUG_ARGS const XSpanFile &ff,
 #define XSPAN_DEBUG_IMPL f(ff),
 #define XSPAN_DEBUG_PASS ff,
 #else

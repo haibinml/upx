@@ -270,6 +270,12 @@ TEST_CASE("xspan array access") {
 
 #if (WITH_XSPAN >= 2) && DEBUG
 
+TEST_CASE("XSPAN_CONFIG_ENABLE_DEBUG") {
+#if XSPAN_CONFIG_ENABLE_DEBUG
+    CHECK(true);
+#endif
+}
+
 TEST_CASE("PtrOrSpanOrNull") {
     char real_buf[2 + 6 + 2] = {126, 127, 0, 1, 2, 3, 4, 5, 124, 125};
     char *base_buf = real_buf + 2;

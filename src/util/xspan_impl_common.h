@@ -218,6 +218,7 @@ forceinline ~CSelf() noexcept {}
         // double sanity check
         assertInvariants();
     }
+
 #ifdef UPX_VERSION_HEX
     // constructors from MemBuffer
     CSelf(MemBuffer &mb)
@@ -319,6 +320,10 @@ public:
             // ok
             ptr = other.ptr;
         }
+#if XSPAN_CONFIG_ENABLE_DEBUG && 1
+        if (f.src_file == nullptr)
+            f = other.f;
+#endif
         assertInvariants();
         return *this;
     }
