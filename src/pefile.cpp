@@ -353,7 +353,7 @@ PeFile::Reloc::Reloc(unsigned relocnum) {
 }
 
 void PeFile::Reloc::initSpans() {
-    start_buf = SPAN_0_MAKE(byte, start, start_size_in_bytes); // => now a SPAN_S
+    start_buf = SPAN_S_MAKE(byte, start, start_size_in_bytes); // => now is a SPAN_S
     rb.rel = SPAN_TYPE_CAST(BaseReloc, start_buf);             // SPAN_0
     rb.rel1 = SPAN_TYPE_CAST(LE16, start_buf);                 // SPAN_0
     rb.reset();
@@ -502,8 +502,7 @@ void PeFile::Reloc::finish(byte *(&result_ptr), unsigned &result_size) {
 #endif
 }
 
-void PeFile32::processRelocs() // pass1
-{
+void PeFile32::processRelocs() { // pass1
     big_relocs = 0;
 
     const unsigned skip1 = IDADDR(PEDIR_BASERELOC);
@@ -533,14 +532,14 @@ void PeFile32::processRelocs() // pass1
         if (counts[ic])
             infoWarning("skipping unsupported relocation type %d (%d)", ic, counts[ic]);
 
-    LE32 *fix[4];
+    LE32 *fix[4] = {};
     auto fix_deleter = upx::ArrayDeleter(fix, 0); // don't leak memory
     for (unsigned ic = 0; ic <= IMAGE_REL_BASED_HIGHLOW; ic++) {
         fix[ic] = New(LE32, counts[ic]);
         fix_deleter.count += 1;
     }
 
-    unsigned xcounts[4];
+    unsigned xcounts[4] = {};
     memset(xcounts, 0, sizeof(xcounts));
 
     // prepare sorting
@@ -605,8 +604,7 @@ void PeFile32::processRelocs() // pass1
 }
 
 // FIXME - this is too similar to PeFile32::processRelocs
-void PeFile64::processRelocs() // pass1
-{
+void PeFile64::processRelocs() { // pass1
     big_relocs = 0;
 
     const unsigned skip1 = IDADDR(PEDIR_BASERELOC);
@@ -636,14 +634,14 @@ void PeFile64::processRelocs() // pass1
         if (ic != IMAGE_REL_BASED_DIR64 && counts[ic])
             infoWarning("skipping unsupported relocation type %d (%d)", ic, counts[ic]);
 
-    LE32 *fix[16];
+    LE32 *fix[16] = {};
     auto fix_deleter = upx::ArrayDeleter(fix, 0); // don't leak memory
     for (unsigned ic = 0; ic < 16; ic++) {
         fix[ic] = New(LE32, counts[ic]);
         fix_deleter.count += 1;
     }
 
-    unsigned xcounts[16];
+    unsigned xcounts[16] = {};
     memset(xcounts, 0, sizeof(xcounts));
 
     // prepare sorting
@@ -1065,7 +1063,7 @@ unsigned PeFile::processImports0(ord_mask_t ord_mask) { // pass 1
     }
     mb_oimport.alloc(soimport);
     mb_oimport.clear();
-    oimport = mb_oimport;
+    oimport = SPAN_S_MAKE(byte, mb_oimport); // => now is a SPAN_S
 
     // NOLINTNEXTLINE(bugprone-multi-level-implicit-pointer-conversion)
     upx_qsort(idlls, dllnum, sizeof(idlls[0]), UDll::compare);
@@ -1137,15 +1135,15 @@ unsigned PeFile::processImports0(ord_mask_t ord_mask) { // pass 1
         lookups.add_interval(idlls[ic]->lookupt, esize);
         if (ptr_diff_bytes(ibuf.subref("bad import name %#x", idlls[ic]->iat, 1),
                            idlls[ic]->lookupt) != 0) {
-            memcpy(ibuf.subref("bad import name %#x", idlls[ic]->iat, esize), idlls[ic]->lookupt,
-                   esize);
+            memmove(ibuf.subref("bad import name %#x", idlls[ic]->iat, esize), idlls[ic]->lookupt,
+                    esize);
             iats.add_interval(idlls[ic]->iat, esize);
         }
         names.add_interval(idlls[ic]->name, strlen(idlls[ic]->name) + 1 + 1);
     }
     ppi += 4;
     assert(ppi < oimport + soimport);
-    soimport = ptr_diff_bytes(ppi, oimport);
+    soimport = ptr_udiff_bytes(ppi, oimport);
 
     if (soimport == 4)
         soimport = 0;
@@ -1318,8 +1316,7 @@ void PeFile::Export::build(char *newbase, unsigned newoffs) {
     assert(exports - newbase == (int) size);
 }
 
-void PeFile::processExports(Export *xport) // pass1
-{
+void PeFile::processExports(Export *xport) { // pass1
     soexport = ALIGN_UP(IDSIZE(PEDIR_EXPORT), 4u);
     if (soexport == 0)
         return;
@@ -1335,8 +1332,7 @@ void PeFile::processExports(Export *xport) // pass1
     oexport = mb_oexport;
 }
 
-void PeFile::processExports(Export *xport, unsigned newoffs) // pass2
-{
+void PeFile::processExports(Export *xport, unsigned newoffs) { // pass2
     if (soexport)
         xport->build((char *) raw_bytes(oexport, 0), newoffs);
 }
@@ -1579,8 +1575,7 @@ void PeFile::processLoadConf(Interval *iv) { // pass 1
 }
 
 void PeFile::processLoadConf(Reloc *rel, const Interval *iv,
-                             unsigned newaddr) // pass2
-{
+                             unsigned newaddr) { // pass2
     // now we have the address of the new load config table
     // so we can create the new relocation entries
     for (unsigned ic = 0; ic < iv->ivnum; ic++) {
@@ -1973,7 +1968,7 @@ void PeFile::processResources(Resource *res) {
         return; // empty .rsrc Section
     mb_oresources.alloc(soresources);
     mb_oresources.clear();
-    oresources = SPAN_S_MAKE(byte, mb_oresources); // => SPAN_S
+    oresources = SPAN_S_MAKE(byte, mb_oresources); // => now is a SPAN_S
     SPAN_S_VAR(byte, ores, oresources + res->dirsize());
 
     char *keep_icons = nullptr; // icon ids in the first icon group

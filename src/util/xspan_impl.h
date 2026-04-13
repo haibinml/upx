@@ -180,7 +180,7 @@ struct XSpan_is_convertible : public XSpan_detail::XSpan_ptr_is_convertible<
                                   From, typename XSpan_detail::XSpan_void_to_T<From, To>::type> {};
 #endif
 
-#if DEBUG
+#if DEBUG || 1
 // need extra parenthesis because the C preprocessor does not understand C++ templates
 // char => char
 ACC_COMPILE_TIME_ASSERT_HEADER((XSpan_is_convertible<char, char>::value))
