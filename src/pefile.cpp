@@ -1135,8 +1135,9 @@ unsigned PeFile::processImports0(ord_mask_t ord_mask) { // pass 1
         lookups.add_interval(idlls[ic]->lookupt, esize);
         if (ptr_diff_bytes(ibuf.subref("bad import name %#x", idlls[ic]->iat, 1),
                            idlls[ic]->lookupt) != 0) {
-            memmove(ibuf.subref("bad import name %#x", idlls[ic]->iat, esize), idlls[ic]->lookupt,
-                    esize);
+            byte *a = ibuf.subref("bad import name %#x %#x", idlls[ic]->iat, esize);
+            ptr_check_no_overlap(a, esize, idlls[ic]->lookupt, esize);
+            memmove(a, idlls[ic]->lookupt, esize);
             iats.add_interval(idlls[ic]->iat, esize);
         }
         names.add_interval(idlls[ic]->name, strlen(idlls[ic]->name) + 1 + 1);
