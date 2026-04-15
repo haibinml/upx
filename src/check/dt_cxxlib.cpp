@@ -32,6 +32,143 @@
 #include "../conf.h"
 
 /*************************************************************************
+// xspan codegen
+**************************************************************************/
+
+namespace {
+template <class T>
+struct TestXSpanCG {
+    static noinline XSPAN_0(T) make_span_0_0(T *p, size_t count) noexcept {
+        XSPAN_0(T) r = XSPAN_0_MAKE(T, p, XSpanCount(count));
+        (void) count;
+        return r;
+    }
+    static noinline XSPAN_P(T) make_span_p_0(T *p, size_t count) noexcept {
+        XSPAN_P(T) r = XSPAN_0_MAKE(T, p, XSpanCount(count));
+        (void) count;
+        return r;
+    }
+    static noinline XSPAN_S(T) make_span_s_0(T *p, size_t count) noexcept {
+        XSPAN_S(T) r = XSPAN_0_MAKE(T, p, XSpanCount(count));
+        (void) count;
+        return r;
+    }
+
+    static noinline XSPAN_0(T) make_span_0_p(T *p, size_t count) noexcept {
+        XSPAN_0(T) r = XSPAN_P_MAKE(T, p, XSpanCount(count));
+        (void) count;
+        return r;
+    }
+    static noinline XSPAN_P(T) make_span_p_p(T *p, size_t count) noexcept {
+        XSPAN_P(T) r = XSPAN_P_MAKE(T, p, XSpanCount(count));
+        (void) count;
+        return r;
+    }
+    static noinline XSPAN_S(T) make_span_s_p(T *p, size_t count) noexcept {
+        XSPAN_S(T) r = XSPAN_P_MAKE(T, p, XSpanCount(count));
+        (void) count;
+        return r;
+    }
+
+    static noinline XSPAN_0(T) make_span_0_s(T *p, size_t count) noexcept {
+        XSPAN_0(T) r = XSPAN_S_MAKE(T, p, XSpanCount(count));
+        (void) count;
+        return r;
+    }
+    static noinline XSPAN_P(T) make_span_p_s(T *p, size_t count) noexcept {
+        XSPAN_P(T) r = XSPAN_S_MAKE(T, p, XSpanCount(count));
+        (void) count;
+        return r;
+    }
+    static noinline XSPAN_S(T) make_span_s_s(T *p, size_t count) noexcept {
+        XSPAN_S(T) r = XSPAN_S_MAKE(T, p, XSpanCount(count));
+        (void) count;
+        return r;
+    }
+
+    static noinline XSPAN_0(T) var_span_0(T *p, size_t count) noexcept {
+        XSPAN_0_VAR(T, r, p, XSpanCount(count));
+        (void) count;
+        return r;
+    }
+    static noinline XSPAN_P(T) var_span_p(T *p, size_t count) noexcept {
+        XSPAN_P_VAR(T, r, p, XSpanCount(count));
+        (void) count;
+        return r;
+    }
+    static noinline XSPAN_S(T) var_span_s(T *p, size_t count) noexcept {
+        XSPAN_S_VAR(T, r, p, XSpanCount(count));
+        (void) count;
+        return r;
+    }
+};
+} // namespace
+
+TEST_CASE("xspan codegen") {
+    byte buf[4] = {0, 1, 2, 3};
+    {
+        auto r = TestXSpanCG<byte>::make_span_0_0(buf, sizeof(buf));
+        CHECK(r == buf);
+    }
+    {
+        auto r = TestXSpanCG<byte>::make_span_p_0(buf, sizeof(buf));
+        CHECK(r == buf);
+    }
+    {
+        auto r = TestXSpanCG<byte>::make_span_s_0(buf, sizeof(buf));
+        CHECK(r == buf);
+    }
+    {
+        auto r = TestXSpanCG<byte>::make_span_0_p(buf, sizeof(buf));
+        CHECK(r == buf);
+    }
+    {
+        auto r = TestXSpanCG<byte>::make_span_p_p(buf, sizeof(buf));
+        CHECK(r == buf);
+    }
+    {
+        auto r = TestXSpanCG<byte>::make_span_s_p(buf, sizeof(buf));
+        CHECK(r == buf);
+    }
+    {
+        auto r = TestXSpanCG<byte>::make_span_0_s(buf, sizeof(buf));
+        CHECK(r == buf);
+    }
+    {
+        auto r = TestXSpanCG<byte>::make_span_p_s(buf, sizeof(buf));
+        CHECK(r == buf);
+    }
+    {
+        auto r = TestXSpanCG<byte>::make_span_s_s(buf, sizeof(buf));
+        CHECK(r == buf);
+    }
+    {
+        auto r = TestXSpanCG<byte>::var_span_0(buf, sizeof(buf));
+        CHECK(r == buf);
+    }
+    {
+        auto r = TestXSpanCG<byte>::var_span_p(buf, sizeof(buf));
+        CHECK(r == buf);
+    }
+    {
+        auto r = TestXSpanCG<byte>::var_span_s(buf, sizeof(buf));
+        CHECK(r == buf);
+    }
+    CHECK(TestXSpanCG<byte>::make_span_0_0(buf, sizeof(buf)) == buf);
+    CHECK(TestXSpanCG<byte>::make_span_p_0(buf, sizeof(buf)) == buf);
+    CHECK(TestXSpanCG<byte>::make_span_s_0(buf, sizeof(buf)) == buf);
+    CHECK(TestXSpanCG<byte>::make_span_0_p(buf, sizeof(buf)) == buf);
+    CHECK(TestXSpanCG<byte>::make_span_p_p(buf, sizeof(buf)) == buf);
+    CHECK(TestXSpanCG<byte>::make_span_s_p(buf, sizeof(buf)) == buf);
+    CHECK(TestXSpanCG<byte>::make_span_0_s(buf, sizeof(buf)) == buf);
+    CHECK(TestXSpanCG<byte>::make_span_p_s(buf, sizeof(buf)) == buf);
+    CHECK(TestXSpanCG<byte>::make_span_s_s(buf, sizeof(buf)) == buf);
+    CHECK(TestXSpanCG<byte>::var_span_0(buf, sizeof(buf)) == buf);
+    CHECK(TestXSpanCG<byte>::var_span_p(buf, sizeof(buf)) == buf);
+    CHECK(TestXSpanCG<byte>::var_span_s(buf, sizeof(buf)) == buf);
+}
+
+/*************************************************************************
 // standard C++ library
 **************************************************************************/
 

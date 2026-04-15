@@ -555,7 +555,7 @@ public: // raw access
 
     // like C++20 std::span
     pointer data() const noexcept { return ptr; }
-    pointer data(size_t bytes) const { return raw_bytes(bytes); } // UPX extra
+    pointer data(size_t bytes) const may_throw { return raw_bytes(bytes); } // UPX extra
     size_type size() const { return size_bytes() / sizeof(element_type); }
     size_type size_bytes() const {
         assertInvariants();
