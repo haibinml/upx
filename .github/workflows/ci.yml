@@ -22,8 +22,8 @@ env:
   UPX_DEBUG_TEST_FLOAT_DIVISION_BY_ZERO: 1
   UPX_DEBUG_TEST_LIBC_QSORT: 1
   ZSTD_CLEVEL: 17
-  #ZIG_DIST_VERSION: 0.15.2 # 2025-10-11
-  ZIG_DIST_VERSION: 0.16.0 # 2026-04-13
+  ZIG_DIST_VERSION: 0.15.2 # 2025-10-11
+  #ZIG_DIST_VERSION: 0.16.0 # 2026-04-13
 
 jobs:
   job-rebuild-and-verify-stubs:
@@ -758,8 +758,8 @@ jobs:
           ZIG_DIST_NAME=zig-x86_64-linux-${ZIG_DIST_VERSION}
           #curl -sS -L -O https://ziglang.org/builds/${ZIG_DIST_NAME}.tar.xz
           #curl -sS -L -O https://ziglang.org/download/0.14.1/${ZIG_DIST_NAME}.tar.xz
-          #curl -sS -L -O https://ziglang.org/download/0.15.2/${ZIG_DIST_NAME}.tar.xz
-          curl -sS -L -O https://ziglang.org/download/0.16.0/${ZIG_DIST_NAME}.tar.xz
+          curl -sS -L -O https://ziglang.org/download/0.15.2/${ZIG_DIST_NAME}.tar.xz
+          #curl -sS -L -O https://ziglang.org/download/0.16.0/${ZIG_DIST_NAME}.tar.xz
           ls -l ${ZIG_DIST_NAME}.tar.xz
           file ${ZIG_DIST_NAME}.tar.xz || true
           tar -xoJf ${ZIG_DIST_NAME}.tar.xz
@@ -769,7 +769,7 @@ jobs:
           echo -n 'zig version: '; zig version
           # patch zig
           ls -la "$HOME" "$GITHUB_WORKSPACE" || true
-          #(cd ${ZIG_DIST_NAME} && patch --verbose -p1 -i "$GITHUB_WORKSPACE"/misc/patches/zig/0001-x.patch)
+          (cd ${ZIG_DIST_NAME} && patch --verbose -p1 -i "$GITHUB_WORKSPACE"/misc/patches/zig/0001-x.patch)
           # create wrapper scripts (needed for CMake)
           log=
           log='set -x\n'
