@@ -1045,7 +1045,16 @@ unsigned PeFile::processImports0(ord_mask_t ord_mask) { // pass 1
 
         soimport += strlen(dlls[ic].name) + 1 + 4;
 
-        for (IPTR_VAR(const LEXX, tarr, dlls[ic].lookupt); *tarr; tarr += 1) {
+        // error: no match for ‘operator-’ (operand types are ‘XSpan::Span<const LE32>’
+        //                                                and ‘XSpan::Span<const LE32>’)
+        //     dlls[ic].name, tarr - tarr0, (unsigned long long)data);
+        int i_tarr = 0; // workaround above deficiency in XSpan
+
+        for (IPTR_VAR(const LEXX, tarr, dlls[ic].lookupt); *tarr; tarr += 1, i_tarr += 1) {
+            if (0xfffdu & (*tarr >> 30)) { // UPX_RSIZE_MAX_MEM but allowing (1<<31)
+                throwCantPack("bad import %s[%#x]:%#llx", dlls[ic].name, i_tarr,
+                              (unsigned long long) *tarr);
+            }
             if (*tarr & ord_mask) {
                 importbyordinal = true;
                 soimport += 2; // ordinal num: 2 bytes
@@ -1085,11 +1094,12 @@ unsigned PeFile::processImports0(ord_mask_t ord_mask) { // pass 1
             if (strcasecmp(idlls[ic]->name, "kernel32.dll"))
                 continue;
             if (idlls[ic]->ordinal)
-                for (const LEXX *tarr = idlls[ic]->lookupt; *tarr; tarr++)
+                for (const LEXX *tarr = idlls[ic]->lookupt; *tarr; tarr++) {
                     if (*tarr & ord_mask) {
                         ilinker->add_import(kernelDll(), *tarr & 0xffff);
                         kernel32ordinal = true;
                     }
+                }
         } else if (!ilinker->hasDll(idlls[ic]->name)) {
             if (idlls[ic]->shname && !idlls[ic]->ordinal)
                 ilinker->add_import(idlls[ic]->name, idlls[ic]->shname);
@@ -1109,7 +1119,7 @@ unsigned PeFile::processImports0(ord_mask_t ord_mask) { // pass 1
         set_le32(ppi, ilinker->getAddress(idlls[ic]->name));
         set_le32(ppi + 4, idlls[ic]->iat - rvamin);
         ppi += 8;
-        for (; *tarr; tarr++)
+        for (; *tarr; tarr++) {
             if (*tarr & ord_mask) {
                 const unsigned ord = *tarr & 0xffff;
                 if (idlls[ic]->isk32 && kernel32ordinal) {
@@ -1129,6 +1139,7 @@ unsigned PeFile::processImports0(ord_mask_t ord_mask) { // pass 1
                 ppi += take2;
                 names.add_interval(*tarr, 2 + take2);
             }
+        }
         ppi++;
 
         const unsigned esize = ptr_udiff_bytes(tarr, idlls[ic]->lookupt);
