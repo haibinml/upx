@@ -621,7 +621,13 @@ void PeFile64::processRelocs() { // pass1
     if (opt->win32_pe.strip_relocs || relocnum == 0) {
         if (IDSIZE(PEDIR_BASERELOC)) {
             ibuf.fill(IDADDR(PEDIR_BASERELOC), IDSIZE(PEDIR_BASERELOC), FILLVAL);
+            unsigned const old_objs = ih.objects;
             ih.objects = tryremove(IDADDR(PEDIR_BASERELOC), ih.objects);
+            if (old_objs != ih.objects) { // was removed
+                IDADDR(PEDIR_BASERELOC) = 0;
+                IDSIZE(PEDIR_BASERELOC) = 0;
+                ih.imagesize = isection[-1 + ih.objects].vsize + isection[-1 + ih.objects].vaddr;
+            }
         }
         mb_orelocs.alloc(1);
         mb_orelocs.clear();
@@ -2799,8 +2805,12 @@ void PeFile::rebuildRelocs(SPAN_S(byte) & extra_info, unsigned bits, unsigned fl
     // Comments at end of this file say that compressed relocs are optional.
     // Try to detect their presence.  There might be no compressed relocs.
 #if WITH_XSPAN >= 2
-    const size_t headway = extra_info.size_bytes();
+    const size_t headway = extra_info.size_bytes() - 4;
 #else
+    // FIXME: last 4 bytes of extra_info are the file offset of extra_info,
+    // so they should be excluded from the count of data bytes.
+    // Something is peculiar unless WITH_XSPAN >= 2.
+    // Also, optional icondir_count is strange following compressed relocs.
     const size_t headway = 5;
 #endif
     unsigned orig_crelocs = 0;
