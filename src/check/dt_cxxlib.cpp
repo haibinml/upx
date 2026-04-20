@@ -159,7 +159,7 @@ struct TestXSpanCG {
 };
 } // namespace
 
-TEST_CASE("xspan codegen 1") {
+TEST_CASE("xspan codegen") {
     // typedef byte T;
     typedef int T;
     T buf[4] = {0, 1, 2, 3};
@@ -250,6 +250,27 @@ TEST_CASE("xspan codegen 1") {
         CHECK(r != nullptr);
 #endif
     }
+    {
+        auto r0 = TestXSpanCG<T>::var_span_0(buf, sizeof(buf));
+        auto r1 = TestXSpanCG<T>::var_span_0(buf + 1, sizeof(buf) - sizeof(T));
+        CHECK(std::is_same_v<decltype(r0 - r1), ptrdiff_t>);
+        CHECK((r0 - r1 == -1));
+        CHECK((r1 - r0 == 1));
+    }
+    {
+        auto r0 = TestXSpanCG<T>::var_span_p(buf, sizeof(buf));
+        auto r1 = TestXSpanCG<T>::var_span_p(buf + 1, sizeof(buf) - sizeof(T));
+        CHECK(std::is_same_v<decltype(r0 - r1), ptrdiff_t>);
+        CHECK((r0 - r1 == -1));
+        CHECK((r1 - r0 == 1));
+    }
+    {
+        auto r0 = TestXSpanCG<T>::var_span_s(buf, sizeof(buf));
+        auto r1 = TestXSpanCG<T>::var_span_s(buf + 1, sizeof(buf) - sizeof(T));
+        CHECK(std::is_same_v<decltype(r0 - r1), ptrdiff_t>);
+        CHECK((r0 - r1 == -1));
+        CHECK((r1 - r0 == 1));
+    }
     CHECK(TestXSpanCG<T>::make_span_0_0(buf, sizeof(buf)) == buf);
     CHECK(TestXSpanCG<T>::make_span_p_0(buf, sizeof(buf)) == buf);
     CHECK(TestXSpanCG<T>::make_span_s_0(buf, sizeof(buf)) == buf);
@@ -280,7 +301,7 @@ TEST_CASE("xspan codegen 1") {
     (void) buf;
 }
 
-TEST_CASE("xspan codegen 2") {
+TEST_CASE("xspan codegen const") {
     typedef const byte T;
     // typedef const int T;
     T buf[4] = {0, 1, 2, 3};

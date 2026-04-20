@@ -621,7 +621,7 @@ void PeFile64::processRelocs() { // pass1
     if (opt->win32_pe.strip_relocs || relocnum == 0) {
         if (IDSIZE(PEDIR_BASERELOC)) {
             ibuf.fill(IDADDR(PEDIR_BASERELOC), IDSIZE(PEDIR_BASERELOC), FILLVAL);
-            unsigned const old_objs = ih.objects;
+            const unsigned old_objs = ih.objects;
             ih.objects = tryremove(IDADDR(PEDIR_BASERELOC), ih.objects);
             if (old_objs != ih.objects) { // was removed
                 IDADDR(PEDIR_BASERELOC) = 0;
@@ -1051,11 +1051,7 @@ unsigned PeFile::processImports0(ord_mask_t ord_mask) { // pass 1
 
         soimport += strlen(dlls[ic].name) + 1 + 4;
 
-        // error: no match for ‘operator-’ (operand types are ‘XSpan::Span<const LE32>’
-        //                                                and ‘XSpan::Span<const LE32>’)
-        //     dlls[ic].name, tarr - tarr0, (unsigned long long)data);
-        int i_tarr = 0; // workaround above deficiency in XSpan
-
+        unsigned i_tarr = 0;
         for (IPTR_VAR(const LEXX, tarr, dlls[ic].lookupt); *tarr; tarr += 1, i_tarr += 1) {
             if (0xfffdu & (*tarr >> 30)) { // UPX_RSIZE_MAX_MEM but allowing (1<<31)
                 throwCantPack("bad import %s[%#x]:%#llx", dlls[ic].name, i_tarr,
@@ -2805,20 +2801,20 @@ void PeFile::rebuildRelocs(SPAN_S(byte) & extra_info, unsigned bits, unsigned fl
     // Comments at end of this file say that compressed relocs are optional.
     // Try to detect their presence.  There might be no compressed relocs.
 #if WITH_XSPAN >= 2
-    const size_t headway = extra_info.size_bytes() - 4;
+    const size_t headway = extra_info.size_bytes();
 #else
     // FIXME: last 4 bytes of extra_info are the file offset of extra_info,
     // so they should be excluded from the count of data bytes.
     // Something is peculiar unless WITH_XSPAN >= 2.
     // Also, optional icondir_count is strange following compressed relocs.
-    const size_t headway = 5;
+    const size_t headway = 9;
 #endif
     unsigned orig_crelocs = 0;
     byte big = 0;
-    if (headway >= 4) {
+    if (headway >= 8) {
         orig_crelocs = mem_size(1, get_le32(extra_info));
         extra_info += 4;
-        if (headway >= 5) {
+        if (headway >= 9) {
             big = extra_info[0];
             extra_info += 1;
         }

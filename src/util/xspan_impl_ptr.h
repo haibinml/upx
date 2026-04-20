@@ -125,6 +125,22 @@ public:
         return assign(Self(other));
     }
 
+    // subtraction - ptrdiff_t
+#if 0
+    ptrdiff_t operator-(const Self &other) const {
+        assertInvariants();
+        other.assertInvariants();
+        return ptr - other.ptr;
+    }
+#endif
+    template <class U>
+    XSPAN_REQUIRES_CONVERTIBLE_R(ptrdiff_t)
+    operator-(const CSelf<U> &other) const {
+        assertInvariants();
+        other.assertInvariants();
+        return ptr - other.ptr;
+    }
+
     // cast to a different type (creates a new value)
     template <class U>
     inline CSelf<U> type_cast() const {
