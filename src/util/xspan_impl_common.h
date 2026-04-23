@@ -349,19 +349,12 @@ public:
 #endif
 
     // subtraction - ptrdiff_t
-#if 0
-    ptrdiff_t operator-(const Self &other) const {
-        assertInvariants();
-        other.assertInvariants();
-        return ptr - other.ptr;
-    }
-#endif
     template <class U>
     XSPAN_REQUIRES_CONVERTIBLE_R(ptrdiff_t)
     operator-(const CSelf<U> &other) const {
         assertInvariants();
         other.assertInvariants();
-        return ptr - other.ptr;
+        return check_ptrdiff(ptr, other.ptr);
     }
 
     // subspan (creates a new value)
@@ -545,6 +538,16 @@ private:
         if __acc_cte (configRequireBase || base != nullptr)
             xspan_check_range(p, base, size_in_bytes);
         return p;
+    }
+    ptrdiff_t check_ptrdiff(pointer a, pointer b) const may_throw {
+        assertInvariants();
+        if very_unlikely (a == nullptr && b != nullptr)
+            xspan_fail_nullptr();
+        if very_unlikely (a != nullptr && b == nullptr)
+            xspan_fail_nullptr();
+        if (a != nullptr && b != nullptr)
+            (void) ptr_diff_bytes(a, b);
+        return a - b;
     }
 
     // disable taking the address => force passing by reference
