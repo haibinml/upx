@@ -72,17 +72,17 @@ jobs:
           - { container: 'ubuntu:24.04', target: g++-sh4-linux-gnu, qemu: qemu-sh4 }
           - { container: 'ubuntu:24.04', target: g++-sparc64-linux-gnu, qemu: qemu-sparc64 }
 
-          - { container: 'ubuntu:25.10', target: g++-alpha-linux-gnu, qemu: qemu-alpha }
-          - { container: 'ubuntu:25.10', target: g++-arc-linux-gnu }
-          - { container: 'ubuntu:25.10', target: g++-hppa-linux-gnu, qemu: qemu-hppa }
-          - { container: 'ubuntu:25.10', target: g++-loongarch64-linux-gnu, qemu: qemu-loongarch64 }
-          - { container: 'ubuntu:25.10', target: g++-m68k-linux-gnu, qemu: qemu-m68k }
-          # { container: 'ubuntu:25.10', target: g++-mips64-linux-gnuabi64, qemu: qemu-mips64 }
-          # { container: 'ubuntu:25.10', target: g++-mips64el-linux-gnuabi64, qemu: qemu-mips64el }
-          - { container: 'ubuntu:25.10', target: g++-riscv64-linux-gnu, qemu: qemu-riscv64 }
-          - { container: 'ubuntu:25.10', target: g++-s390x-linux-gnu, qemu: qemu-s390x }
-          - { container: 'ubuntu:25.10', target: g++-sh4-linux-gnu, qemu: qemu-sh4 }
-          - { container: 'ubuntu:25.10', target: g++-sparc64-linux-gnu, qemu: qemu-sparc64 }
+          - { container: 'ubuntu:26.04', target: g++-alpha-linux-gnu, qemu: qemu-alpha }
+          - { container: 'ubuntu:26.04', target: g++-arc-linux-gnu }
+          - { container: 'ubuntu:26.04', target: g++-hppa-linux-gnu, qemu: qemu-hppa }
+          - { container: 'ubuntu:26.04', target: g++-loongarch64-linux-gnu, qemu: qemu-loongarch64 }
+          - { container: 'ubuntu:26.04', target: g++-m68k-linux-gnu, qemu: qemu-m68k }
+          # { container: 'ubuntu:26.04', target: g++-mips64-linux-gnuabi64, qemu: qemu-mips64 }
+          # { container: 'ubuntu:26.04', target: g++-mips64el-linux-gnuabi64, qemu: qemu-mips64el }
+          - { container: 'ubuntu:26.04', target: g++-riscv64-linux-gnu, qemu: qemu-riscv64 }
+          - { container: 'ubuntu:26.04', target: g++-s390x-linux-gnu, qemu: qemu-s390x }
+          - { container: 'ubuntu:26.04', target: g++-sh4-linux-gnu, qemu: qemu-sh4 }
+          - { container: 'ubuntu:26.04', target: g++-sparc64-linux-gnu, qemu: qemu-sparc64 }
 
     runs-on: ubuntu-latest
     container: ${{ matrix.container }}
@@ -117,6 +117,7 @@ jobs:
           export CXX=/usr/bin/${toolchain}-g++
           export CMAKE_AR=/usr/bin/${toolchain}-ar
           export CMAKE_RANLIB=/usr/bin/${toolchain}-ranlib
+          echo -e "CC=$CC\nCXX=$CXX" >> $GITHUB_ENV
           ls -ldF $CC $CXX $CMAKE_AR $CMAKE_RANLIB
           ls -ldF /usr/bin/*{gcc,g++,ar,ranlib}
           ls -ldF /usr/bin/${toolchain}*
@@ -137,6 +138,8 @@ jobs:
           esac
           make UPX_XTARGET=xtarget/${toolchain} xtarget/all
 
+      - run: $CC  -E -x c   -dM /dev/null
+      - run: $CXX -E -x c++ -dM /dev/null
       - run: ls -l build/*/*/*/upx* || true
       - run: ${toolchain}-size build/*/*/*/upx* || true
       - run: file  build/*/*/*/upx* || true

@@ -136,7 +136,7 @@ public:
 
     // cast to a different type (creates a new value)
     template <class U>
-    inline CSelf<U> type_cast() const {
+    CSelf<U> type_cast() const {
         typedef CSelf<U> R;
         typedef typename R::pointer rpointer;
         return R(upx::ptr_static_cast<rpointer>(ptr));
