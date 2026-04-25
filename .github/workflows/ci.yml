@@ -133,8 +133,8 @@ jobs:
           esac
           echo -e "CC=$CC\nCXX=$CXX" >> $GITHUB_ENV
       - run: set -x; $CC --version; $CXX --version
-      - run: $CC  -E -x c   -dM /dev/null
-      - run: $CXX -E -x c++ -dM /dev/null
+      - run: $CC  -E -x c   -dM /dev/null | LC_ALL=C sort
+      - run: $CXX -E -x c++ -dM /dev/null | LC_ALL=C sort
       - run: make build/debug
       - run: make build/release
       - run: make build/debug+test
@@ -164,15 +164,24 @@ jobs:
     steps:
       - run: uname -a; pwd; id; umask
       - run: sudo apt-get update
-      - run: sudo apt-get install -y dmidecode gdb parallel valgrind
+      - run: sudo apt-get install -y dmidecode gdb parallel strace valgrind
       - run: (sudo dmidecode | sed -n -e '/System Information/,/^$/p') || true
       - run: sudo dmidecode -q || true
       - run: sudo dmidecode || true
       - uses: actions/checkout@v6
         with: { submodules: true }
+      - name: Check out test suite
+        run: git clone --depth=1 https://github.com/upx/upx-testsuite ../deps/upx-testsuite
+      - run: set -x; clang --version; clang++ --version
+      - run: set -x; gcc --version; g++ --version
+      - run: clang   -E -x c   -dM /dev/null | LC_ALL=C sort # list predefined macros for C
+      - run: clang++ -E -x c++ -dM /dev/null | LC_ALL=C sort # list predefined macros for C++
+      - run: gcc     -E -x c   -dM /dev/null | LC_ALL=C sort # list predefined macros for C
+      - run: g++     -E -x c++ -dM /dev/null | LC_ALL=C sort # list predefined macros for C++
       - run: make build/extra/gcc/all
       - run: make build/extra/clang/all
       - run: ls -l build/*/*/*/upx* || true
+      - run: size  build/*/*/*/upx* || true
       - run: file  build/*/*/*/upx* || true
       - name: Make artifact
         run: |
@@ -215,6 +224,14 @@ jobs:
           parallel -kv --lb 'cd build/extra/{} && bash ../../../../misc/testsuite/mimic_ctest.sh' ::: $jobs
           ls -ld ./build/*/*/*/upx-* || true
           rm -rf ./build/*/*/*/upx-*
+      - name: Run test suite
+        run: |
+          export upx_testsuite_SRCDIR="$(readlink -en ../deps/upx-testsuite)"
+          jobs="gcc/debug gcc/release clang/debug clang/release"
+          echo "===== parallel jobs: $jobs"
+          parallel -kv --lb 'cd build/extra/{} && bash ../../../../misc/testsuite/upx_testsuite_1.sh' ::: $jobs
+          ls -ld ./build/*/*/*/tmp-upx-testsuite* || true
+          rm -rf ./build/*/*/*/tmp-upx-testsuite*
 
   job-linux-cmake: # uses cmake + make
     if: true
@@ -235,7 +252,7 @@ jobs:
         run: |
           sudo dpkg --add-architecture i386
           sudo apt-get update && sudo apt-get upgrade -y
-          sudo apt-get install -y dmidecode gdb libc6-dbg:i386 parallel valgrind
+          sudo apt-get install -y dmidecode gdb libc6-dbg:i386 parallel strace valgrind
           sudo apt-get install -y g++-multilib g++-mingw-w64-i686 g++-mingw-w64-x86-64
           # make sure that we use posix-threads (pthread/winpthreads) and NOT win32-threads
           for f in i686-w64-mingw32-g++ i686-w64-mingw32-gcc x86_64-w64-mingw32-g++ x86_64-w64-mingw32-gcc; do
@@ -261,10 +278,10 @@ jobs:
         run: git clone --depth=1 https://github.com/upx/upx-testsuite ../deps/upx-testsuite
       - run: set -x; clang --version; clang++ --version
       - run: set -x; gcc --version; g++ --version
-      - run: clang   -E -x c   -dM /dev/null # list predefined macros for C
-      - run: clang++ -E -x c++ -dM /dev/null # list predefined macros for C++
-      - run: gcc     -E -x c   -dM /dev/null # list predefined macros for C
-      - run: g++     -E -x c++ -dM /dev/null # list predefined macros for C++
+      - run: clang   -E -x c   -dM /dev/null | LC_ALL=C sort # list predefined macros for C
+      - run: clang++ -E -x c++ -dM /dev/null | LC_ALL=C sort # list predefined macros for C++
+      - run: gcc     -E -x c   -dM /dev/null | LC_ALL=C sort # list predefined macros for C
+      - run: g++     -E -x c++ -dM /dev/null | LC_ALL=C sort # list predefined macros for C++
       - run: make build/extra/gcc/all
       - run: make build/extra/clang/all
       - run: make build/extra/gcc-m32/all
@@ -276,6 +293,7 @@ jobs:
       - run: make build/extra/cross-windows-mingw64/all
         if: ${{ matrix.use_extra }}
       - run: ls -l build/*/*/*/upx* || true
+      - run: size  build/*/*/*/upx* || true
       - run: file  build/*/*/*/upx* || true
       - name: Make artifact
         run: |

@@ -26,15 +26,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # { container: 'ubuntu:22.04', target: g++-aarch64-linux-gnu, qemu: qemu-aarch64 }
-          # { container: 'ubuntu:22.04', target: g++-arm-linux-gnueabi, qemu: qemu-arm }
-          # { container: 'ubuntu:22.04', target: g++-arm-linux-gnueabihf, qemu: qemu-arm }
-          # { container: 'ubuntu:22.04', target: g++-i686-linux-gnu, qemu: qemu-i386 }
-          # { container: 'ubuntu:22.04', target: g++-mips-linux-gnu, qemu: qemu-mips }
-          # { container: 'ubuntu:22.04', target: g++-mipsel-linux-gnu, qemu: qemu-mipsel }
-          # { container: 'ubuntu:22.04', target: g++-powerpc-linux-gnu, qemu: qemu-ppc }
-          # { container: 'ubuntu:22.04', target: g++-powerpc64-linux-gnu, qemu: qemu-ppc64 }
-          # { container: 'ubuntu:22.04', target: g++-powerpc64le-linux-gnu, qemu: qemu-ppc64le }
+          - { container: 'ubuntu:26.04', target: g++-aarch64-linux-gnu, qemu: qemu-aarch64 }
+          - { container: 'ubuntu:26.04', target: g++-arm-linux-gnueabi, qemu: qemu-arm }
+          - { container: 'ubuntu:26.04', target: g++-arm-linux-gnueabihf, qemu: qemu-arm }
+          - { container: 'ubuntu:26.04', target: g++-i686-linux-gnu, qemu: qemu-i386 }
+          - { container: 'ubuntu:24.04', target: g++-mips-linux-gnu, qemu: qemu-mips }
+          - { container: 'ubuntu:24.04', target: g++-mipsel-linux-gnu, qemu: qemu-mipsel }
+          - { container: 'ubuntu:26.04', target: g++-powerpc-linux-gnu, qemu: qemu-ppc }
+          - { container: 'ubuntu:26.04', target: g++-powerpc64-linux-gnu, qemu: qemu-ppc64 }
+          - { container: 'ubuntu:26.04', target: g++-powerpc64le-linux-gnu, qemu: qemu-ppc64le }
 
           - { container: 'ubuntu:20.04', target: g++-alpha-linux-gnu, qemu: qemu-alpha }
           # { container: 'ubuntu:20.04', target: g++-arc-linux-gnu }
@@ -91,7 +91,7 @@ jobs:
       - name: ${{ format('Install packages {0}', matrix.container) }}
         run: |
           apt-get update && apt-get upgrade -y
-          apt-get install -y --no-install-recommends bash ca-certificates cmake curl file git make parallel tar time tree util-linux xz-utils zstd
+          apt-get install -y --no-install-recommends bash ca-certificates cmake curl file git make parallel strace tar time tree util-linux xz-utils zstd
           apt-get install -y qemu-user ${{ matrix.target }}
       - run: dpkg -l
       - name: Check out code
@@ -117,7 +117,6 @@ jobs:
           export CXX=/usr/bin/${toolchain}-g++
           export CMAKE_AR=/usr/bin/${toolchain}-ar
           export CMAKE_RANLIB=/usr/bin/${toolchain}-ranlib
-          echo -e "CC=$CC\nCXX=$CXX" >> $GITHUB_ENV
           ls -ldF $CC $CXX $CMAKE_AR $CMAKE_RANLIB
           ls -ldF /usr/bin/*{gcc,g++,ar,ranlib}
           ls -ldF /usr/bin/${toolchain}*
@@ -136,10 +135,12 @@ jobs:
             arm-linux-*) CXX="$CXX -Wno-psabi" ;;
             armeb-linux-*) CXX="$CXX -Wno-psabi" ;;
           esac
+          echo -e "CC=$CC\nCXX=$CXX" >> $GITHUB_ENV
           make UPX_XTARGET=xtarget/${toolchain} xtarget/all
 
-      - run: $CC  -E -x c   -dM /dev/null
-      - run: $CXX -E -x c++ -dM /dev/null
+      - run: set -x; $CC --version; $CXX --version
+      - run: $CC  -E -x c   -dM /dev/null | LC_ALL=C sort
+      - run: $CXX -E -x c++ -dM /dev/null | LC_ALL=C sort
       - run: ls -l build/*/*/*/upx* || true
       - run: ${toolchain}-size build/*/*/*/upx* || true
       - run: file  build/*/*/*/upx* || true
@@ -173,16 +174,22 @@ jobs:
         run: |
           export UPX_CONFIG_DISABLE_SELF_PACK_TEST=ON
           [[ $toolchain == aarch64-linux-gnu ]] && export UPX_CONFIG_DISABLE_SELF_PACK_TEST=OFF
+          [[ $toolchain == arm-linux-gnu* ]] && export UPX_CONFIG_DISABLE_SELF_PACK_TEST=OFF
+          [[ $toolchain == i686-linux-gnu ]] && export UPX_CONFIG_DISABLE_SELF_PACK_TEST=OFF
+          [[ $toolchain == mips-linux-gnu ]] && export UPX_CONFIG_DISABLE_SELF_PACK_TEST=OFF
+          [[ $toolchain == mipsel-linux-gnu ]] && export UPX_CONFIG_DISABLE_SELF_PACK_TEST=OFF
+          [[ $toolchain == powerpc-linux-gnu ]] && export UPX_CONFIG_DISABLE_SELF_PACK_TEST=OFF
+          #[[ $toolchain == powerpc64-linux-gnu ]] && export UPX_CONFIG_DISABLE_SELF_PACK_TEST=OFF
+          [[ $toolchain == powerpc64le-linux-gnu ]] && export UPX_CONFIG_DISABLE_SELF_PACK_TEST=OFF
           [[ $toolchain == riscv64-linux-gnu ]] && export UPX_CONFIG_DISABLE_SELF_PACK_TEST=OFF
           export upx_exe_runner="${{ matrix.qemu }}"
           upx_exe_runner="$upx_exe_runner -L /usr/${toolchain}"
-          UPX_DEBUG_DOCTEST_VERBOSE=1 $upx_exe_runner ./build/xtarget/${toolchain}/debug/upx --version-short || true
-          UPX_DEBUG_DOCTEST_VERBOSE=1 $upx_exe_runner ./build/xtarget/${toolchain}/release/upx --version-short || true
-          UPX_DEBUG_DOCTEST_VERBOSE=0 $upx_exe_runner ./build/xtarget/${toolchain}/debug/upx --sysinfo -vv || true
-          UPX_DEBUG_DOCTEST_VERBOSE=0 $upx_exe_runner ./build/xtarget/${toolchain}/release/upx --sysinfo -vv || true
+          UPX_DEBUG_DOCTEST_VERBOSE=1 $upx_exe_runner ./build/xtarget/${toolchain}/debug/upx --sysinfo -vv || true
+          UPX_DEBUG_DOCTEST_VERBOSE=1 $upx_exe_runner ./build/xtarget/${toolchain}/release/upx --sysinfo -vv || true
           jobs="${toolchain}/debug ${toolchain}/release"
           #[[ "${{ matrix.container }}" == "ubuntu:24.04" && $toolchain == alpha-linux-gnu ]] && jobs="${toolchain}/release"
           [[ $toolchain == alpha-linux-gnu ]] && jobs="${toolchain}/release"
+          [[ $toolchain == arm-linux-gnueabihf ]] && jobs="${toolchain}/release"
           echo "===== parallel jobs: $jobs"
           parallel -kv --lb 'cd build/xtarget/{} && bash ../../../../misc/testsuite/mimic_ctest.sh' ::: $jobs
           ls -ld ./build/*/*/*/upx-* || true
@@ -196,6 +203,7 @@ jobs:
           export upx_testsuite_SRCDIR="$(readlink -en ../deps/upx-testsuite)"
           jobs="${toolchain}/debug ${toolchain}/release"
           [[ $toolchain == alpha-linux-gnu ]] && jobs="${toolchain}/release"
+          [[ $toolchain == arm-linux-gnueabihf ]] && jobs="${toolchain}/release"
           echo "===== parallel jobs: $jobs"
           parallel -kv --lb 'cd build/xtarget/{} && bash ../../../../misc/testsuite/upx_testsuite_1.sh' ::: $jobs
           ls -ld ./build/*/*/*/tmp-upx-testsuite* || true
