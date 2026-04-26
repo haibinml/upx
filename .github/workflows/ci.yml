@@ -882,10 +882,8 @@ jobs:
           apk add coreutils "${qemu%% *}"
           test -n "$NEED_GCOMPAT" && apk add gcompat
           export upx_exe_runner="$qemu"
-          UPX_DEBUG_DOCTEST_VERBOSE=1 $upx_exe_runner ./build/zig/${ZIG_TARGET}${ZIG_PIC}/debug/upx --version-short || true
-          UPX_DEBUG_DOCTEST_VERBOSE=1 $upx_exe_runner ./build/zig/${ZIG_TARGET}${ZIG_PIC}/release/upx --version-short || true
-          UPX_DEBUG_DOCTEST_VERBOSE=0 $upx_exe_runner ./build/zig/${ZIG_TARGET}${ZIG_PIC}/debug/upx --sysinfo -vv || true
-          UPX_DEBUG_DOCTEST_VERBOSE=0 $upx_exe_runner ./build/zig/${ZIG_TARGET}${ZIG_PIC}/release/upx --sysinfo -vv || true
+          UPX_DEBUG_DOCTEST_VERBOSE=1 $upx_exe_runner ./build/zig/${ZIG_TARGET}${ZIG_PIC}/debug/upx --sysinfo -vv || true
+          UPX_DEBUG_DOCTEST_VERBOSE=1 $upx_exe_runner ./build/zig/${ZIG_TARGET}${ZIG_PIC}/release/upx --sysinfo -vv || true
           jobs="${ZIG_TARGET}${ZIG_PIC}/debug ${ZIG_TARGET}${ZIG_PIC}/release"
           echo "===== parallel jobs: $jobs"
           parallel -kv --lb 'cd build/zig/{} && bash ../../../../misc/testsuite/mimic_ctest.sh' ::: $jobs
@@ -913,6 +911,8 @@ jobs:
           jobs="${ZIG_TARGET}${ZIG_PIC}/debug ${ZIG_TARGET}${ZIG_PIC}/release"
           echo "===== parallel jobs: $jobs"
           parallel -kv --lb 'cd build/zig/{} && bash ../../../../misc/testsuite/mimic_ctest.sh' ::: $jobs
+          ls -ld ./build/*/*/*/upx-* || true
+          rm -rf ./build/*/*/*/upx-*
       - name: Run file system tests
         if: ${{ matrix.zig_target == 'i386-linux-musl' || matrix.zig_target == 'x86_64-linux-musl' || contains(matrix.zig_target, 'x86_64-linux-gnu.2') }}
         run: |
@@ -921,3 +921,7 @@ jobs:
           jobs="${ZIG_TARGET}${ZIG_PIC}/debug ${ZIG_TARGET}${ZIG_PIC}/release"
           echo "===== parallel jobs: $jobs"
           parallel -kv --lb 'cd build/zig/{} && chmod a+w . && sudo -u nobody bash ../../../../misc/testsuite/test_symlinks.sh' ::: $jobs
+      - run: apk add binutils
+      - run: ls -l build/*/*/*/upx* || true
+      - run: size  build/*/*/*/upx* || true
+      - run: file  build/*/*/*/upx* || true

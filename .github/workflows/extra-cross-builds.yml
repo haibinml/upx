@@ -36,6 +36,9 @@ jobs:
           - { container: 'ubuntu:26.04', target: g++-powerpc64-linux-gnu, qemu: qemu-ppc64 }
           - { container: 'ubuntu:26.04', target: g++-powerpc64le-linux-gnu, qemu: qemu-ppc64le }
 
+          - { container: 'ubuntu:26.04', target: g++-mingw-w64-i686 }
+          - { container: 'ubuntu:26.04', target: g++-mingw-w64-x86-64 }
+
           - { container: 'ubuntu:20.04', target: g++-alpha-linux-gnu, qemu: qemu-alpha }
           # { container: 'ubuntu:20.04', target: g++-arc-linux-gnu }
           - { container: 'ubuntu:20.04', target: g++-hppa-linux-gnu, qemu: qemu-hppa }
@@ -124,12 +127,19 @@ jobs:
             # these old architectures do not support sanitize
             alpha-linux-gnu) export UPX_CONFIG_DISABLE_SANITIZE=ON ;;
             hppa-linux-gnu) export UPX_CONFIG_DISABLE_SANITIZE=ON ;;
+            m68k-linux-gnu) export UPX_CONFIG_EXPECT_THREADS=OFF ;;
             # avoid sanitize link errors with current MinGW-w64 versions; link libstdc++ statically
             i686-w64-mingw32)
               export UPX_CONFIG_DISABLE_SANITIZE=ON
+              export UPX_CONFIG_EXPECT_THREADS=OFF
+              export CMAKE_SYSTEM_NAME=Windows
+              export CMAKE_SYSTEM_PROCESSOR=X86
               CC="$CC -static"; CXX="$CXX -static" ;;
             x86_64-w64-mingw32)
               export UPX_CONFIG_DISABLE_SANITIZE=ON
+              export UPX_CONFIG_EXPECT_THREADS=OFF
+              export CMAKE_SYSTEM_NAME=Windows
+              export CMAKE_SYSTEM_PROCESSOR=AMD64
               CC="$CC -static"; CXX="$CXX -static" ;;
             # avoid warnings about arm libstdc++ ABI change in gcc-7
             arm-linux-*) CXX="$CXX -Wno-psabi" ;;
@@ -144,6 +154,7 @@ jobs:
       - run: ls -l build/*/*/*/upx* || true
       - run: ${toolchain}-size build/*/*/*/upx* || true
       - run: file  build/*/*/*/upx* || true
+
       - name: Make artifact
         run: |
           N=$(echo "upx-${GITHUB_REF_NAME}-${GITHUB_SHA:0:7}-${{ matrix.container }}-${{ matrix.target }}" | sed 's/[^0-9a-zA-Z_.+-]/-/g')
@@ -175,6 +186,7 @@ jobs:
           export UPX_CONFIG_DISABLE_SELF_PACK_TEST=ON
           [[ $toolchain == aarch64-linux-gnu ]] && export UPX_CONFIG_DISABLE_SELF_PACK_TEST=OFF
           [[ $toolchain == arm-linux-gnu* ]] && export UPX_CONFIG_DISABLE_SELF_PACK_TEST=OFF
+          [[ $toolchain == armeb-linux-gnu* ]] && export UPX_CONFIG_DISABLE_SELF_PACK_TEST=OFF
           [[ $toolchain == i686-linux-gnu ]] && export UPX_CONFIG_DISABLE_SELF_PACK_TEST=OFF
           [[ $toolchain == mips-linux-gnu ]] && export UPX_CONFIG_DISABLE_SELF_PACK_TEST=OFF
           [[ $toolchain == mipsel-linux-gnu ]] && export UPX_CONFIG_DISABLE_SELF_PACK_TEST=OFF
@@ -182,6 +194,7 @@ jobs:
           #[[ $toolchain == powerpc64-linux-gnu ]] && export UPX_CONFIG_DISABLE_SELF_PACK_TEST=OFF
           [[ $toolchain == powerpc64le-linux-gnu ]] && export UPX_CONFIG_DISABLE_SELF_PACK_TEST=OFF
           [[ $toolchain == riscv64-linux-gnu ]] && export UPX_CONFIG_DISABLE_SELF_PACK_TEST=OFF
+          [[ $toolchain == x86_64-linux-gnu ]] && export UPX_CONFIG_DISABLE_SELF_PACK_TEST=OFF
           export upx_exe_runner="${{ matrix.qemu }}"
           upx_exe_runner="$upx_exe_runner -L /usr/${toolchain}"
           UPX_DEBUG_DOCTEST_VERBOSE=1 $upx_exe_runner ./build/xtarget/${toolchain}/debug/upx --sysinfo -vv || true
