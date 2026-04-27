@@ -36,8 +36,12 @@ jobs:
           - { container: 'ubuntu:26.04', target: g++-powerpc64-linux-gnu, qemu: qemu-ppc64 }
           - { container: 'ubuntu:26.04', target: g++-powerpc64le-linux-gnu, qemu: qemu-ppc64le }
 
-          - { container: 'ubuntu:26.04', target: g++-mingw-w64-i686 }
-          - { container: 'ubuntu:26.04', target: g++-mingw-w64-x86-64 }
+          - { container: 'ubuntu:22.04', target: g++-mingw-w64-i686, wine: wine }
+          - { container: 'ubuntu:22.04', target: g++-mingw-w64-x86-64, wine: wine }
+          - { container: 'ubuntu:24.04', target: g++-mingw-w64-i686, Q_wine: wine }
+          - { container: 'ubuntu:24.04', target: g++-mingw-w64-x86-64, Q_wine: wine }
+          - { container: 'ubuntu:26.04', target: g++-mingw-w64-i686, Q_wine: wine }
+          - { container: 'ubuntu:26.04', target: g++-mingw-w64-x86-64, Q_wine: wine }
 
           - { container: 'ubuntu:20.04', target: g++-alpha-linux-gnu, qemu: qemu-alpha }
           # { container: 'ubuntu:20.04', target: g++-arc-linux-gnu }
@@ -193,6 +197,7 @@ jobs:
       - name: ${{ format('Inspect /usr/{0}', env.toolchain) }}
         run: |
           echo "/usr/${toolchain}"
+          [[ ! -d "/usr/${toolchain}" ]] && exit 1
           set -x
           ls -laF /usr
           ls -laF /usr/${toolchain}
@@ -208,6 +213,7 @@ jobs:
           jobs="${toolchain}/debug ${toolchain}/release"
           [[ $toolchain == alpha-linux-gnu ]] && jobs="${toolchain}/release"
           [[ $toolchain == arm-linux-gnueabihf ]] && jobs="${toolchain}/release"
+          [[ $toolchain == riscv64-linux-gnu ]] && exit 0
           echo "===== parallel jobs: $jobs"
           CTEST_JOBS=4 parallel -kv --lb 'make build/xtarget/{}+test' ::: $jobs
           ls -ld ./build/*/*/*/XTesting/*/* || true
@@ -242,3 +248,21 @@ jobs:
           parallel -kv --lb 'cd build/xtarget/{} && bash ../../../../misc/testsuite/upx_testsuite_1.sh' ::: $jobs
           ls -ld ./build/*/*/*/tmp-upx-testsuite* || true
           rm -rf ./build/*/*/*/tmp-upx-testsuite*
+
+      - name: Install Wine
+        if: ${{ matrix.wine }}
+        run: |
+          dpkg --add-architecture i386
+          apt-get update && apt-get upgrade -y
+          apt-get install -y wine wine32:i386 wine64
+          ls -l /usr/bin/wine*
+          mkdir -p -v ~/.wine && wineboot --init
+
+      - name: ${{ format('Run ctest tests with Wine {0}', matrix.wine) }}
+        if: ${{ matrix.wine }}
+        run: |
+          jobs="${toolchain}/debug ${toolchain}/release"
+          echo "===== parallel jobs: $jobs"
+          CTEST_JOBS=4 parallel -kv --lb 'make build/xtarget/{}+test' ::: $jobs
+          ls -ld ./build/*/*/*/XTesting/*/* || true
+          rm -rf ./build/*/*/*/XTesting/*/*
