@@ -448,6 +448,7 @@ jobs:
           make UPX_XTARGET=xtarget/cross-darwin-arm64 xtarget/all \
             CC="clang -target arm64-apple-darwin" CXX="clang++ -target arm64-apple-darwin"
       - run: ls -l build/*/*/*/upx* || true
+      - run: size  build/*/*/*/upx* || true
       - run: file  build/*/*/*/upx* || true
       - name: Make artifact
         run: |
@@ -553,8 +554,9 @@ jobs:
           fi
       - run: make build/debug
       - run: make build/release
-      - run: shopt -s globstar; ls -ld build/**/upx* || true
-      - run: shopt -s globstar; file   build/**/upx* || true
+      - run: shopt -s globstar; ls -ld build/**/upx.exe || true
+      - run: shopt -s globstar; size   build/**/upx.exe || true
+      - run: shopt -s globstar; file   build/**/upx.exe || true
       - name: Make artifact
         run: |
           N=$(echo "upx-${GITHUB_REF_NAME}-${GITHUB_SHA:0:7}-${{ matrix.name }}" | sed 's/[^0-9a-zA-Z_.-]/-/g')
@@ -662,8 +664,9 @@ jobs:
           @rem set UPX_LIBS=%BDIR%\bzip2\bzip2.lib %BDIR%\ucl\ucl.lib %BDIR%\zlib\zlib.lib %BDIR%\zstd\zstd.lib
           set sources=%s%\*.cpp %s%\check\*.cpp %s%\compress\*.cpp %s%\console\*.cpp %s%\filter\*.cpp %s%\util\*.cpp
           %RUN_CL% -J -O2 -W4 -WX -std:c++17 -Zc:__cplusplus -EHsc -DUPX_VERSION_GITREV="""%GITREV%""" %DEFS% %UPX_DEFS% -I%H%\vendor -Feupx.exe %sources% %UPX_LIBS% /link ${{ matrix.link_machine_flags }} setargv.obj
-      - run: shopt -s globstar; ls -ld build/**/upx* || true
-      - run: shopt -s globstar; file   build/**/upx* || true
+      - run: shopt -s globstar; ls -ld build/**/upx.exe || true
+      - run: shopt -s globstar; size   build/**/upx.exe || true
+      - run: shopt -s globstar; file   build/**/upx.exe || true
       - name: Make artifact
         run: |
           N=$(echo "upx-${GITHUB_REF_NAME}-${GITHUB_SHA:0:7}-windows-bh-${{ matrix.name }}" | sed 's/[^0-9a-zA-Z_.-]/-/g')
