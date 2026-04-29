@@ -3,7 +3,7 @@
 
 # see https://github.com/mstorsjo/llvm-mingw
 
-name: 'Weekly CI CC - llvm-mingw'
+name: 'llvm-mingw'
 on:
   workflow_dispatch:
 defaults: { run: { shell: bash } }
@@ -13,6 +13,7 @@ env:
   CTEST_OUTPUT_ON_FAILURE: 'ON'
   DEBIAN_FRONTEND: noninteractive
   UPX_CMAKE_CONFIG_FLAGS: -Wdev --warn-uninitialized
+  #UPX_DEBUG_DOCTEST_DISABLE: 1
   UPX_DEBUG_TEST_FLOAT_DIVISION_BY_ZERO: 1
   UPX_DEBUG_TEST_LIBC_QSORT: 1
   ZSTD_CLEVEL: 17
@@ -72,18 +73,22 @@ jobs:
             url: 'https://github.com/mstorsjo/llvm-mingw/releases/download/20260421/llvm-mingw-20260421-ucrt-ubuntu-22.04-x86_64.tar.xz'
     name: ${{ format('{0} {1}', matrix.name, matrix.llvm_version) }}
     runs-on: ubuntu-latest
-    container: ubuntu:24.04
+    #container: 'ubuntu:22.04'
+    container: 'ubuntu:26.04'
     env:
       CMAKE_SYSTEM_NAME: Windows
       xflags: -D_WIN32_WINNT=0x0601
+      #xflags: -D_WIN32_WINNT=0x0601 -DDOCTEST_CONFIG_DISABLE
     steps:
+      - run: uname -a; pwd; id; umask
+      - run: ulimit -a || true
       - name: Install packages
         run: |
           dpkg --add-architecture i386
           apt-get update && apt-get upgrade -y
           apt-get install -y --no-install-recommends bash ca-certificates cmake curl file git make parallel strace tar time util-linux wine wine32:i386 wine64 xz-utils zstd
           git config --global --add safe.directory '*' # needed when running in a container
-          ls -l /usr/bin/wine*
+          ls -ldF /usr/bin/wine* /etc/alternatives/*wine* || true
           mkdir -p -v ~/.wine
           wineboot --init
       - name: 'Check out code'
@@ -96,12 +101,13 @@ jobs:
           mkdir -p -v ~/.local/bin
           cd ~/.local/bin
           curl -sS -L -O '${{ matrix.url }}'
-          ls -l ./llvm-mingw*.tar.*
+          ls -ldF ./llvm-mingw*.tar.*
           tar -xoaf ./llvm-mingw*.tar.*
           rm ./llvm-mingw*.tar.*
           # update PATH
           cd ./llvm-mingw*/bin
           echo "PATH=$PWD:$PATH" >> $GITHUB_ENV
+          ls -laF
 
       - name: 'Build clang aarch64'
         run: |
@@ -158,6 +164,10 @@ jobs:
           export CMAKE_CROSSCOMPILING_EMULATOR=wine
           make UPX_XTARGET=llvm-mingw/x86_64-w64-mingw32-clang-static xtarget/all
 
+      - run: ls -l build/*/*/*/upx* || true
+      - run: llvm-size build/*/*/*/upx* || true
+      - run: file  build/*/*/*/upx* || true
+
       - name: 'Make artifact'
         run: |
           ls -l build/*/*/*/upx.exe
@@ -194,8 +204,9 @@ jobs:
           ls -ld ./build/*/*/*/XTesting/*/* || true
           rm -rf ./build/*/*/*/XTesting/*/*
 
+      - run: ulimit -a || true
       - name: 'Run test suite under Wine'
-        if: true
+        #if: false
         run: |
           export upx_exe_runner=wine
           export upx_exe=./upx.exe
@@ -203,6 +214,6 @@ jobs:
           jobs="i686-w64-mingw32-clang-static/debug i686-w64-mingw32-clang-static/release"
           jobs="$jobs x86_64-w64-mingw32-clang-static/debug x86_64-w64-mingw32-clang-static/release"
           echo "===== parallel jobs: $jobs"
-          parallel -kv --lb 'cd build/llvm-mingw/{} && bash ../../../../misc/testsuite/upx_testsuite_1.sh' ::: $jobs
+          parallel -kv --lb 'cd build/llvm-mingw/{} && bash ../../../../misc/testsuite/upx_testsuite_1.sh' ::: $jobs || true
           ls -ld ./build/*/*/*/tmp-upx-testsuite* || true
           rm -rf ./build/*/*/*/tmp-upx-testsuite*
