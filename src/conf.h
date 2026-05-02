@@ -827,9 +827,9 @@ unsigned membuffer_get_size_in_bytes(const MemBuffer &mb) noexcept;
 
 // main.cpp
 extern const char *progname;
-bool main_set_exit_code(int ec);
-int main_get_options(int argc, char **argv);
-void main_get_envoptions();
+noinline bool main_set_exit_code(int ec);
+noinline int main_get_options(int argc, char **argv);
+noinline void main_get_envoptions();
 noinline int upx_main(int argc, char *argv[]) may_throw;
 
 // msg.cpp
