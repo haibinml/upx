@@ -521,8 +521,8 @@ jobs:
           - { name: windows-11-arm64,   os: windows-11-arm, vsversion: 2022, vsarch: arm64 }
           - { name: windows-11-arm64ec, os: windows-11-arm, vsversion: 2022, vsarch: arm64, use_arm64ec: true }
           # { name: windows-11-arm64x,  os: windows-11-arm, vsversion: 2022, vsarch: arm64, use_arm64x: true }
-          - { name: windows-2025-amd64, os: windows-2025,   vsversion: 2022, vsarch: amd64 }
-          - { name: windows-2025-i386,  os: windows-2025,   vsversion: 2022, vsarch: amd64_x86 }
+          - { name: windows-2022-amd64, os: windows-2022,   vsversion: 2022, vsarch: amd64 }
+          - { name: windows-2022-i386,  os: windows-2022,   vsversion: 2022, vsarch: amd64_x86 }
           - { name: windows-2026-amd64, os: windows-2025-vs2026, vsversion: 2026, vsarch: amd64 }
           - { name: windows-2026-i386,  os: windows-2025-vs2026, vsversion: 2026, vsarch: amd64_x86 }
     name: ${{ format('{0}', matrix.name) }}
@@ -533,8 +533,6 @@ jobs:
         with: { submodules: true }
       - name: Check out test suite
         run: git clone --depth=1 https://github.com/upx/upx-testsuite ../deps/upx-testsuite
-      # uses: ilammy/msvc-dev-cmd@v1
-      # with: { vsversion: '${{ matrix.vsversion }}', arch: '${{ matrix.vsarch }}' }
       - name: Set platform
         run: |
           if [[ "${{ matrix.use_arm64ec }}" == "true" ]]; then true;
@@ -578,6 +576,8 @@ jobs:
       - name: ${{ format('Upload artifact {0}', env.artifact_name) }}
         uses: actions/upload-artifact@v7
         with: { name: '${{ env.artifact_name }}', path: tmp/artifact }
+      - run: UPX_DEBUG_DOCTEST_VERBOSE=1 ./build/debug/Debug/upx.exe --sysinfo -vv
+      - run: UPX_DEBUG_DOCTEST_VERBOSE=1 ./build/release/Release/upx.exe --sysinfo -vv
       - name: Run ctest tests
         run: |
           ctest --test-dir build/debug   --parallel 8 -C Debug
@@ -586,28 +586,30 @@ jobs:
         run: |
           env -C build/debug/Debug     upx_exe=./upx.exe bash "$PWD"/misc/testsuite/mimic_ctest.sh
           env -C build/release/Release upx_exe=./upx.exe bash "$PWD"/misc/testsuite/mimic_ctest.sh
-      - name: Run test suite build/release
+      - name: Run test suite
         run: |
           export upx_testsuite_SRCDIR="$(readlink -en ../deps/upx-testsuite)"
+          env -C build/debug/Debug     upx_exe=./upx.exe bash "$PWD"/misc/testsuite/upx_testsuite_1.sh
           env -C build/release/Release upx_exe=./upx.exe bash "$PWD"/misc/testsuite/upx_testsuite_1.sh
 
   job-windows-bh-toolchains: # build "by hand" using cmd.exe
     if: github.repository_owner == 'upx'
+    #if: false
     needs: [ job-cppflags ]
     strategy:
       fail-fast: false
       matrix:
         include:
-          - { name: amd64-win64-vs2025,   os: windows-2025, vsversion: 2022, vsarch: amd64 }
-          - { name: arm64-win64-vs2025,   os: windows-2025, vsversion: 2022, vsarch: amd64_arm64 }
-          - { name: arm64ec-win64-vs2025, os: windows-2025, vsversion: 2022, vsarch: amd64_arm64, cl_machine_flags: -arm64EC, link_machine_flags: '/machine:arm64ec' }
-          # { name: arm64x-win64-vs2025,  os: windows-2025, vsversion: 2022, vsarch: amd64_arm64, cl_machine_flags: -arm64EC, link_machine_flags: '/machine:arm64x' }
-          - { name: i386-win32-vs2025,    os: windows-2025, vsversion: 2022, vsarch: amd64_x86 }
-          # { name: amd64-win64-vs2026,   os: windows-2025-vs2026, vsversion: 2026, vsarch: amd64 }
-          # { name: arm64-win64-vs2026,   os: windows-2025-vs2026, vsversion: 2026, vsarch: amd64_arm64 }
-          # { name: arm64ec-win64-vs2026, os: windows-2025-vs2026, vsversion: 2026, vsarch: amd64_arm64, cl_machine_flags: -arm64EC, link_machine_flags: '/machine:arm64ec' }
-          # { name: arm64x-win64-vs2026,  os: windows-2025-vs2026, vsversion: 2026, vsarch: amd64_arm64, cl_machine_flags: -arm64EC, link_machine_flags: '/machine:arm64x' }
-          # { name: i386-win32-vs2026,    os: windows-2025-vs2026, vsversion: 2026, vsarch: amd64_x86 }
+          - { name: amd64-win64-vs2022,   os: windows-2022, vsversion: 2022, vsarch: amd64 }
+          - { name: arm64-win64-vs2022,   os: windows-2022, vsversion: 2022, vsarch: amd64_arm64 }
+          - { name: arm64ec-win64-vs2022, os: windows-2022, vsversion: 2022, vsarch: amd64_arm64, cl_machine_flags: -arm64EC, link_machine_flags: '/machine:arm64ec' }
+          # { name: arm64x-win64-vs2022,  os: windows-2022, vsversion: 2022, vsarch: amd64_arm64, cl_machine_flags: -arm64EC, link_machine_flags: '/machine:arm64x' }
+          - { name: i386-win32-vs2022,    os: windows-2022, vsversion: 2022, vsarch: amd64_x86 }
+          - { name: amd64-win64-vs2026,   os: windows-2025-vs2026, vsversion: 18.0, vsarch: amd64 }
+          - { name: arm64-win64-vs2026,   os: windows-2025-vs2026, vsversion: 18.0, vsarch: amd64_arm64 }
+          - { name: arm64ec-win64-vs2026, os: windows-2025-vs2026, vsversion: 18.0, vsarch: amd64_arm64, cl_machine_flags: -arm64EC, link_machine_flags: '/machine:arm64ec' }
+          # { name: arm64x-win64-vs2026,  os: windows-2025-vs2026, vsversion: 18.0, vsarch: amd64_arm64, cl_machine_flags: -arm64EC, link_machine_flags: '/machine:arm64x' }
+          - { name: i386-win32-vs2026,    os: windows-2025-vs2026, vsversion: 18.0, vsarch: amd64_x86 }
     name: ${{ format('windows-bh {0}', matrix.name) }}
     runs-on: ${{ matrix.os }}
     env:
@@ -623,7 +625,8 @@ jobs:
           mkdir -p -v build/$C/$B/{bzip2,ucl,upx,zlib,zstd}
           repository_name="${GITHUB_REPOSITORY##*/}" # basename
           echo "H=d:\\a\\$repository_name\\$repository_name" >> $GITHUB_ENV
-      - uses: ilammy/msvc-dev-cmd@v1
+      # uses: ilammy/msvc-dev-cmd@v1
+      - uses: m-doughty/msvc-dev-cmd@node24-v1
         with: { vsversion: '${{ matrix.vsversion }}', arch: '${{ matrix.vsarch }}' }
       - name: Build by hand
         shell: cmd
@@ -679,6 +682,8 @@ jobs:
       - name: ${{ format('Upload artifact {0}', env.artifact_name) }}
         uses: actions/upload-artifact@v7
         with: { name: '${{ env.artifact_name }}', path: tmp/artifact }
+      - run: UPX_DEBUG_DOCTEST_VERBOSE=1 ./build/$C/$B/upx/upx.exe --sysinfo -vv
+        if: ${{ matrix.vsarch != 'amd64_arm64' }}
       - name: Mimic ctest tests
         if: ${{ matrix.vsarch != 'amd64_arm64' }}
         run: |
@@ -780,8 +785,9 @@ jobs:
           ZIG_DIST_NAME=zig-x86_64-linux-${ZIG_DIST_VERSION}
           #curl -sS -L -O https://ziglang.org/builds/${ZIG_DIST_NAME}.tar.xz
           #curl -sS -L -O https://ziglang.org/download/0.14.1/${ZIG_DIST_NAME}.tar.xz
-          curl -sS -L -O https://ziglang.org/download/0.15.2/${ZIG_DIST_NAME}.tar.xz
+          #curl -sS -L -O https://ziglang.org/download/0.15.2/${ZIG_DIST_NAME}.tar.xz
           #curl -sS -L -O https://ziglang.org/download/0.16.0/${ZIG_DIST_NAME}.tar.xz
+          curl -sS -L -O https://github.com/upx/upx-stubtools/releases/download/v20160918/${ZIG_DIST_NAME}.tar.xz
           ls -l ${ZIG_DIST_NAME}.tar.xz
           file ${ZIG_DIST_NAME}.tar.xz || true
           tar -xoJf ${ZIG_DIST_NAME}.tar.xz

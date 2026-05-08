@@ -110,7 +110,11 @@ jobs:
           # update PATH
           cd ./llvm-mingw*/bin
           echo "PATH=$PWD:$PATH" >> $GITHUB_ENV
-          ls -laF
+          echo "$PWD"; ls -laF
+
+      - run: cd ~/.local/bin/llvm-mingw*/. && echo "$PWD" && ls -laF
+      - run: cd ~/.local/bin/llvm-mingw*/. && echo "$PWD" && tree -sF -d --du
+      # run: cd ~/.local/bin/llvm-mingw*/. && echo "$PWD" && tree -sF    --du
 
       - name: 'Build clang aarch64'
         run: |
