@@ -147,7 +147,7 @@ jobs:
       - run: UPX_DEBUG_DOCTEST_VERBOSE=1 ./build/debug/upx --sysinfo -vv
       - run: UPX_DEBUG_DOCTEST_VERBOSE=1 ./build/release/upx --sysinfo -vv
       - name: Show summary
-        run: ls -l build/*/upx && size build/*/upx && file build/*/upx
+        run: ls -ldF build/*/upx && size build/*/upx && file build/*/upx
 
   job-linux-cmake-0: # uses cmake + make
     if: true
@@ -256,6 +256,7 @@ jobs:
           sudo apt-get install -y dmidecode gdb libc6-dbg:i386 parallel strace valgrind
           sudo apt-get install -y g++-multilib g++-mingw-w64-i686 g++-mingw-w64-x86-64
           # make sure that we use posix-threads (pthread/winpthreads) and NOT win32-threads
+          ls -ldF /etc/alternatives/*mingw* || true
           for f in i686-w64-mingw32-g++ i686-w64-mingw32-gcc x86_64-w64-mingw32-g++ x86_64-w64-mingw32-gcc; do
             if test -f /usr/bin/$f-posix; then sudo update-alternatives --set $f /usr/bin/$f-posix; fi
             ls -ldF /usr/bin/${f}* || true
@@ -411,7 +412,7 @@ jobs:
         run: |
           test -z "$HOMEBREW_PREFIX" && HOMEBREW_PREFIX="$(brew --prefix)"
           echo "HOMEBREW_PREFIX=$HOMEBREW_PREFIX" >> $GITHUB_ENV
-          # testsuite needs working "readlink -en" and "sha256sum -b"
+          # testsuite needs working "readlink -fn" and "sha256sum -b"
           packages="parallel util-linux"
           test -e "$HOMEBREW_PREFIX/opt/coreutils/libexec/gnubin/readlink" || packages="$packages coreutils"
           if test -n "$packages"; then
@@ -432,13 +433,13 @@ jobs:
         run: git clone --depth=1 https://github.com/upx/upx-testsuite ../deps/upx-testsuite
       - run: set -x; xcode-select -p || true; xcodebuild -version || true
       - run: set -x; clang --version; clang++ --version
-      - run: clang   -E -x c   -dM /dev/null # list predefined macros for C
-      - run: clang++ -E -x c++ -dM /dev/null # list predefined macros for C++
+      - run: clang   -E -x c   -dM /dev/null | LC_ALL=C sort # list predefined macros for C
+      - run: clang++ -E -x c++ -dM /dev/null | LC_ALL=C sort # list predefined macros for C++
       - run: set -x; ${{ matrix.gcc }} --version; ${{ matrix.gxx }} --version
         if: ${{ matrix.gcc }}
-      - run: ${{ matrix.gcc }} -E -x c   -dM /dev/null # list predefined macros for C
+      - run: ${{ matrix.gcc }} -E -x c   -dM /dev/null | LC_ALL=C sort # list predefined macros for C
         if: ${{ matrix.gcc }}
-      - run: ${{ matrix.gxx }} -E -x c++ -dM /dev/null # list predefined macros for C++
+      - run: ${{ matrix.gxx }} -E -x c++ -dM /dev/null | LC_ALL=C sort # list predefined macros for C++
         if: ${{ matrix.gcc }}
       - run: make build/extra/clang/all
       - name: Build extra/gcc/all
@@ -505,7 +506,7 @@ jobs:
         if: ${{ matrix.testsuite }}
         run: |
           export PATH="$HOMEBREW_PREFIX/opt/coreutils/libexec/gnubin:$PATH"
-          export upx_testsuite_SRCDIR="$(readlink -en ../deps/upx-testsuite)"
+          export upx_testsuite_SRCDIR="$(readlink -fn ../deps/upx-testsuite)"
           jobs="clang/debug clang/release"
           test -n "${{ matrix.gcc }}" && jobs="$jobs gcc/debug gcc/release"
           echo "===== parallel jobs: $jobs"
@@ -674,15 +675,16 @@ jobs:
       - name: Make artifact
         run: |
           N=$(echo "upx-${GITHUB_REF_NAME}-${GITHUB_SHA:0:7}-windows-bh-${{ matrix.name }}" | sed 's/[^0-9a-zA-Z_.-]/-/g')
-          mkdir -p "tmp/artifact/$N/$B"
-          cp -ai build/$C/$B/upx/upx*.exe "tmp/artifact/$N/$B"
+          mkdir -p -v "tmp/artifact/$N/$B"
+          cp -v -ai build/$C/$B/upx/upx*.exe "tmp/artifact/$N/$B"
+          (cd build && shopt -s globstar && cp -v -ai --parents **/dt_cxxlib.* "../tmp/artifact/$N")
           #(cd tmp/artifact && tar --sort=name --zstd -cf "$N.tar.zst" "$N" && rm -rf "./$N" && ls -la && zstd -tq "$N.tar.zst")
           (cd tmp/artifact && tar --sort=name --gzip -cf "$N.tar.gz" "$N" && rm -rf "./$N" && ls -la && gzip -tq "$N.tar.gz")
           echo "artifact_name=$N" >> $GITHUB_ENV
       - name: ${{ format('Upload artifact {0}', env.artifact_name) }}
         uses: actions/upload-artifact@v7
         with: { name: '${{ env.artifact_name }}', path: tmp/artifact }
-      - run: UPX_DEBUG_DOCTEST_VERBOSE=1 ./build/$C/$B/upx/upx.exe --sysinfo -vv
+      - run: set -x; UPX_DEBUG_DOCTEST_VERBOSE=1 ./build/$C/$B/upx/upx.exe --sysinfo -vv
         if: ${{ matrix.vsarch != 'amd64_arm64' }}
       - name: Mimic ctest tests
         if: ${{ matrix.vsarch != 'amd64_arm64' }}

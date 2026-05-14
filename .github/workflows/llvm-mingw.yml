@@ -12,7 +12,10 @@ env:
   CMAKE_VERBOSE_MAKEFILE: 'ON'
   CTEST_OUTPUT_ON_FAILURE: 'ON'
   DEBIAN_FRONTEND: noninteractive
+  NO_COLOR: 1
+  UPX_CMAKE_BUILD_FLAGS: --verbose
   UPX_CMAKE_CONFIG_FLAGS: -Wdev --warn-uninitialized
+  UPX_CONFIG_HAVE_WORKING_BUILD_RPATH: 'ON'
   #UPX_DEBUG_DOCTEST_DISABLE: 1
   UPX_DEBUG_TEST_FLOAT_DIVISION_BY_ZERO: 1
   UPX_DEBUG_TEST_LIBC_QSORT: 1
@@ -221,6 +224,7 @@ jobs:
           export upx_exe_runner="wine"
           export upx_exe=./upx.exe
           export upx_testsuite_SRCDIR="$(readlink -en ../deps/upx-testsuite)"
+          export UPX_DEBUG_DOCTEST_DISABLE=1
           jobs="i686-w64-mingw32-clang-static/debug i686-w64-mingw32-clang-static/release"
           jobs="$jobs x86_64-w64-mingw32-clang-static/debug x86_64-w64-mingw32-clang-static/release"
           echo "===== parallel jobs: $jobs"
