@@ -209,11 +209,17 @@ jobs:
 
       - name: 'Run ctest tests i686 static with Wine'
         run: |
+          upx_exe_runner="wine"
+          UPX_DEBUG_DOCTEST_VERBOSE=1 $upx_exe_runner ./build/llvm-mingw/i686-w64-mingw32-clang-static/debug/upx.exe --sysinfo -vv
+          UPX_DEBUG_DOCTEST_VERBOSE=1 $upx_exe_runner ./build/llvm-mingw/i686-w64-mingw32-clang-static/release/upx.exe --sysinfo -vv
           make UPX_XTARGET=llvm-mingw/i686-w64-mingw32-clang-static xtarget/all+test
           ls -ld ./build/*/*/*/XTesting/*/* || true
           rm -rf ./build/*/*/*/XTesting/*/*
       - name: 'Run ctest tests x86_64 static with Wine'
         run: |
+          upx_exe_runner="wine"
+          UPX_DEBUG_DOCTEST_VERBOSE=1 $upx_exe_runner ./build/llvm-mingw/x86_64-w64-mingw32-clang-static/debug/upx.exe --sysinfo -vv
+          UPX_DEBUG_DOCTEST_VERBOSE=1 $upx_exe_runner ./build/llvm-mingw/x86_64-w64-mingw32-clang-static/release/upx.exe --sysinfo -vv
           make UPX_XTARGET=llvm-mingw/x86_64-w64-mingw32-clang-static xtarget/all+test
           ls -ld ./build/*/*/*/XTesting/*/* || true
           rm -rf ./build/*/*/*/XTesting/*/*

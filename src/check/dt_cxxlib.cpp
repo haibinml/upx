@@ -163,68 +163,69 @@ TEST_CASE("xspan codegen") {
     // typedef byte T;
     typedef int T;
     T buf[4] = {0, 1, 2, 3};
+    const size_t bytes = acc_vget_acc_hsize_t(sizeof(buf), 0);
     {
-        auto r = TestXSpanCG<T>::make_span_0_0(buf, sizeof(buf));
+        auto r = TestXSpanCG<T>::make_span_0_0(buf, bytes);
         CHECK(r == buf);
     }
     {
-        auto r = TestXSpanCG<T>::make_span_p_0(buf, sizeof(buf));
+        auto r = TestXSpanCG<T>::make_span_p_0(buf, bytes);
         CHECK(r == buf);
     }
     {
-        auto r = TestXSpanCG<T>::make_span_s_0(buf, sizeof(buf));
+        auto r = TestXSpanCG<T>::make_span_s_0(buf, bytes);
         CHECK(r == buf);
     }
     {
-        auto r = TestXSpanCG<T>::make_span_0_p(buf, sizeof(buf));
+        auto r = TestXSpanCG<T>::make_span_0_p(buf, bytes);
         CHECK(r == buf);
     }
     {
-        auto r = TestXSpanCG<T>::make_span_p_p(buf, sizeof(buf));
+        auto r = TestXSpanCG<T>::make_span_p_p(buf, bytes);
         CHECK(r == buf);
     }
     {
-        auto r = TestXSpanCG<T>::make_span_s_p(buf, sizeof(buf));
+        auto r = TestXSpanCG<T>::make_span_s_p(buf, bytes);
         CHECK(r == buf);
     }
     {
-        auto r = TestXSpanCG<T>::make_span_0_s(buf, sizeof(buf));
+        auto r = TestXSpanCG<T>::make_span_0_s(buf, bytes);
         CHECK(r == buf);
     }
     {
-        auto r = TestXSpanCG<T>::make_span_p_s(buf, sizeof(buf));
+        auto r = TestXSpanCG<T>::make_span_p_s(buf, bytes);
         CHECK(r == buf);
     }
     {
-        auto r = TestXSpanCG<T>::make_span_s_s(buf, sizeof(buf));
+        auto r = TestXSpanCG<T>::make_span_s_s(buf, bytes);
         CHECK(r == buf);
     }
     {
-        auto r = TestXSpanCG<T>::var_span_0(buf, sizeof(buf));
+        auto r = TestXSpanCG<T>::var_span_0(buf, bytes);
         CHECK(r == buf);
     }
     {
-        auto r = TestXSpanCG<T>::var_span_p(buf, sizeof(buf));
+        auto r = TestXSpanCG<T>::var_span_p(buf, bytes);
         CHECK(r == buf);
     }
     {
-        auto r = TestXSpanCG<T>::var_span_s(buf, sizeof(buf));
+        auto r = TestXSpanCG<T>::var_span_s(buf, bytes);
         CHECK(r == buf);
     }
     {
-        auto r = TestXSpanCG<T>::type_cast_0(buf, sizeof(buf));
+        auto r = TestXSpanCG<T>::type_cast_0(buf, bytes);
         CHECK(r == upx::ptr_static_cast<LE32 *>(buf));
     }
     {
-        auto r = TestXSpanCG<T>::type_cast_p(buf, sizeof(buf));
+        auto r = TestXSpanCG<T>::type_cast_p(buf, bytes);
         CHECK(r == upx::ptr_static_cast<LE32 *>(buf));
     }
     {
-        auto r = TestXSpanCG<T>::type_cast_s(buf, sizeof(buf));
+        auto r = TestXSpanCG<T>::type_cast_s(buf, bytes);
         CHECK(r == upx::ptr_static_cast<LE32 *>(buf));
     }
     {
-        auto r = TestXSpanCG<T>::invalidate_0(buf, sizeof(buf));
+        auto r = TestXSpanCG<T>::invalidate_0(buf, bytes);
 #if defined(__CHERI__) && defined(__CHERI_PURE_CAPABILITY__)
         (void) r;
 #else
@@ -233,7 +234,7 @@ TEST_CASE("xspan codegen") {
 #endif
     }
     {
-        auto r = TestXSpanCG<T>::invalidate_p(buf, sizeof(buf));
+        auto r = TestXSpanCG<T>::invalidate_p(buf, bytes);
 #if defined(__CHERI__) && defined(__CHERI_PURE_CAPABILITY__)
         (void) r;
 #else
@@ -242,7 +243,7 @@ TEST_CASE("xspan codegen") {
 #endif
     }
     {
-        auto r = TestXSpanCG<T>::invalidate_s(buf, sizeof(buf));
+        auto r = TestXSpanCG<T>::invalidate_s(buf, bytes);
 #if defined(__CHERI__) && defined(__CHERI_PURE_CAPABILITY__)
         (void) r;
 #else
@@ -251,22 +252,22 @@ TEST_CASE("xspan codegen") {
 #endif
     }
     {
-        auto r0 = TestXSpanCG<T>::var_span_0(buf, sizeof(buf));
-        auto r1 = TestXSpanCG<T>::var_span_0(buf + 1, sizeof(buf) - sizeof(T));
+        auto r0 = TestXSpanCG<T>::var_span_0(buf, bytes);
+        auto r1 = TestXSpanCG<T>::var_span_0(buf + 1, bytes - sizeof(T));
         CHECK(std::is_same_v<decltype(r0 - r1), ptrdiff_t>);
         CHECK((r0 - r1 == -1));
         CHECK((r1 - r0 == 1));
     }
     {
-        auto r0 = TestXSpanCG<T>::var_span_p(buf, sizeof(buf));
-        auto r1 = TestXSpanCG<T>::var_span_p(buf + 1, sizeof(buf) - sizeof(T));
+        auto r0 = TestXSpanCG<T>::var_span_p(buf, bytes);
+        auto r1 = TestXSpanCG<T>::var_span_p(buf + 1, bytes - sizeof(T));
         CHECK(std::is_same_v<decltype(r0 - r1), ptrdiff_t>);
         CHECK((r0 - r1 == -1));
         CHECK((r1 - r0 == 1));
     }
     {
-        auto r0 = TestXSpanCG<T>::var_span_s(buf, sizeof(buf));
-        auto r1 = TestXSpanCG<T>::var_span_s(buf + 1, sizeof(buf) - sizeof(T));
+        auto r0 = TestXSpanCG<T>::var_span_s(buf, bytes);
+        auto r1 = TestXSpanCG<T>::var_span_s(buf + 1, bytes - sizeof(T));
         CHECK(std::is_same_v<decltype(r0 - r1), ptrdiff_t>);
         CHECK((r0 - r1 == -1));
         CHECK((r1 - r0 == 1));
@@ -289,59 +290,56 @@ TEST_CASE("xspan codegen") {
         CHECK(std::is_same_v<decltype(r0 - r1), ptrdiff_t>);
         CHECK((r0 - r1 == 0));
     }
-    CHECK(TestXSpanCG<T>::make_span_0_0(buf, sizeof(buf)) == buf);
-    CHECK(TestXSpanCG<T>::make_span_p_0(buf, sizeof(buf)) == buf);
-    CHECK(TestXSpanCG<T>::make_span_s_0(buf, sizeof(buf)) == buf);
-    CHECK(TestXSpanCG<T>::make_span_0_p(buf, sizeof(buf)) == buf);
-    CHECK(TestXSpanCG<T>::make_span_p_p(buf, sizeof(buf)) == buf);
-    CHECK(TestXSpanCG<T>::make_span_s_p(buf, sizeof(buf)) == buf);
-    CHECK(TestXSpanCG<T>::make_span_0_s(buf, sizeof(buf)) == buf);
-    CHECK(TestXSpanCG<T>::make_span_p_s(buf, sizeof(buf)) == buf);
-    CHECK(TestXSpanCG<T>::make_span_s_s(buf, sizeof(buf)) == buf);
-    CHECK(TestXSpanCG<T>::var_span_0(buf, sizeof(buf)) == buf);
-    CHECK(TestXSpanCG<T>::var_span_p(buf, sizeof(buf)) == buf);
-    CHECK(TestXSpanCG<T>::var_span_s(buf, sizeof(buf)) == buf);
-    CHECK(TestXSpanCG<T>::type_cast_0(buf, sizeof(buf)) == upx::ptr_static_cast<LE32 *>(buf));
-    CHECK(TestXSpanCG<T>::type_cast_p(buf, sizeof(buf)) == upx::ptr_static_cast<LE32 *>(buf));
-    CHECK(TestXSpanCG<T>::type_cast_s(buf, sizeof(buf)) == upx::ptr_static_cast<LE32 *>(buf));
-    CHECK(TestXSpanCG<T>::type_cast_const_0(buf, sizeof(buf)) ==
-          upx::ptr_static_cast<const LE32 *>(buf));
-    CHECK(TestXSpanCG<T>::type_cast_const_p(buf, sizeof(buf)) ==
-          upx::ptr_static_cast<const LE32 *>(buf));
-    CHECK(TestXSpanCG<T>::type_cast_const_s(buf, sizeof(buf)) ==
-          upx::ptr_static_cast<const LE32 *>(buf));
+    CHECK(TestXSpanCG<T>::make_span_0_0(buf, bytes) == buf);
+    CHECK(TestXSpanCG<T>::make_span_p_0(buf, bytes) == buf);
+    CHECK(TestXSpanCG<T>::make_span_s_0(buf, bytes) == buf);
+    CHECK(TestXSpanCG<T>::make_span_0_p(buf, bytes) == buf);
+    CHECK(TestXSpanCG<T>::make_span_p_p(buf, bytes) == buf);
+    CHECK(TestXSpanCG<T>::make_span_s_p(buf, bytes) == buf);
+    CHECK(TestXSpanCG<T>::make_span_0_s(buf, bytes) == buf);
+    CHECK(TestXSpanCG<T>::make_span_p_s(buf, bytes) == buf);
+    CHECK(TestXSpanCG<T>::make_span_s_s(buf, bytes) == buf);
+    CHECK(TestXSpanCG<T>::var_span_0(buf, bytes) == buf);
+    CHECK(TestXSpanCG<T>::var_span_p(buf, bytes) == buf);
+    CHECK(TestXSpanCG<T>::var_span_s(buf, bytes) == buf);
+    CHECK(TestXSpanCG<T>::type_cast_0(buf, bytes) == upx::ptr_static_cast<LE32 *>(buf));
+    CHECK(TestXSpanCG<T>::type_cast_p(buf, bytes) == upx::ptr_static_cast<LE32 *>(buf));
+    CHECK(TestXSpanCG<T>::type_cast_s(buf, bytes) == upx::ptr_static_cast<LE32 *>(buf));
+    CHECK(TestXSpanCG<T>::type_cast_const_0(buf, bytes) == upx::ptr_static_cast<const LE32 *>(buf));
+    CHECK(TestXSpanCG<T>::type_cast_const_p(buf, bytes) == upx::ptr_static_cast<const LE32 *>(buf));
+    CHECK(TestXSpanCG<T>::type_cast_const_s(buf, bytes) == upx::ptr_static_cast<const LE32 *>(buf));
 #if defined(__CHERI__) && defined(__CHERI_PURE_CAPABILITY__)
 #else
-    CHECK(TestXSpanCG<T>::invalidate_0(buf, sizeof(buf)) != buf);
-    CHECK(TestXSpanCG<T>::invalidate_p(buf, sizeof(buf)) != buf);
-    CHECK(TestXSpanCG<T>::invalidate_s(buf, sizeof(buf)) != buf);
+    CHECK(TestXSpanCG<T>::invalidate_0(buf, bytes) != buf);
+    CHECK(TestXSpanCG<T>::invalidate_p(buf, bytes) != buf);
+    CHECK(TestXSpanCG<T>::invalidate_s(buf, bytes) != buf);
 #endif
     (void) buf;
+    (void) bytes;
 }
 
 TEST_CASE("xspan codegen const") {
     typedef const byte T;
     // typedef const int T;
     T buf[4] = {0, 1, 2, 3};
-    CHECK(TestXSpanCG<T>::make_span_0_0(buf, sizeof(buf)) == buf);
-    CHECK(TestXSpanCG<T>::make_span_p_0(buf, sizeof(buf)) == buf);
-    CHECK(TestXSpanCG<T>::make_span_s_0(buf, sizeof(buf)) == buf);
-    CHECK(TestXSpanCG<T>::make_span_0_p(buf, sizeof(buf)) == buf);
-    CHECK(TestXSpanCG<T>::make_span_p_p(buf, sizeof(buf)) == buf);
-    CHECK(TestXSpanCG<T>::make_span_s_p(buf, sizeof(buf)) == buf);
-    CHECK(TestXSpanCG<T>::make_span_0_s(buf, sizeof(buf)) == buf);
-    CHECK(TestXSpanCG<T>::make_span_p_s(buf, sizeof(buf)) == buf);
-    CHECK(TestXSpanCG<T>::make_span_s_s(buf, sizeof(buf)) == buf);
-    CHECK(TestXSpanCG<T>::var_span_0(buf, sizeof(buf)) == buf);
-    CHECK(TestXSpanCG<T>::var_span_p(buf, sizeof(buf)) == buf);
-    CHECK(TestXSpanCG<T>::var_span_s(buf, sizeof(buf)) == buf);
-    CHECK(TestXSpanCG<T>::type_cast_const_0(buf, sizeof(buf)) ==
-          upx::ptr_static_cast<const LE32 *>(buf));
-    CHECK(TestXSpanCG<T>::type_cast_const_p(buf, sizeof(buf)) ==
-          upx::ptr_static_cast<const LE32 *>(buf));
-    CHECK(TestXSpanCG<T>::type_cast_const_s(buf, sizeof(buf)) ==
-          upx::ptr_static_cast<const LE32 *>(buf));
+    const size_t bytes = acc_vget_acc_hsize_t(sizeof(buf), 0);
+    CHECK(TestXSpanCG<T>::make_span_0_0(buf, bytes) == buf);
+    CHECK(TestXSpanCG<T>::make_span_p_0(buf, bytes) == buf);
+    CHECK(TestXSpanCG<T>::make_span_s_0(buf, bytes) == buf);
+    CHECK(TestXSpanCG<T>::make_span_0_p(buf, bytes) == buf);
+    CHECK(TestXSpanCG<T>::make_span_p_p(buf, bytes) == buf);
+    CHECK(TestXSpanCG<T>::make_span_s_p(buf, bytes) == buf);
+    CHECK(TestXSpanCG<T>::make_span_0_s(buf, bytes) == buf);
+    CHECK(TestXSpanCG<T>::make_span_p_s(buf, bytes) == buf);
+    CHECK(TestXSpanCG<T>::make_span_s_s(buf, bytes) == buf);
+    CHECK(TestXSpanCG<T>::var_span_0(buf, bytes) == buf);
+    CHECK(TestXSpanCG<T>::var_span_p(buf, bytes) == buf);
+    CHECK(TestXSpanCG<T>::var_span_s(buf, bytes) == buf);
+    CHECK(TestXSpanCG<T>::type_cast_const_0(buf, bytes) == upx::ptr_static_cast<const LE32 *>(buf));
+    CHECK(TestXSpanCG<T>::type_cast_const_p(buf, bytes) == upx::ptr_static_cast<const LE32 *>(buf));
+    CHECK(TestXSpanCG<T>::type_cast_const_s(buf, bytes) == upx::ptr_static_cast<const LE32 *>(buf));
     (void) buf;
+    (void) bytes;
 }
 
 /*************************************************************************
@@ -1311,10 +1309,10 @@ TEST_CASE("upx::compile_time 1") {
 }
 
 TEST_CASE("upx::compile_time 2a") {
-    constexpr upx_uint16_t v16 = 0xf2f1;
-    constexpr upx_uint32_t v24 = 0xf3f2f1;
-    constexpr upx_uint32_t v32 = 0xf4f3f2f1;
-    constexpr upx_uint64_t v64 = 0xf8f7f6f5f4f3f2f1ull;
+    const upx_uint16_t v16 = upx_uint16_t(acc_vget_acc_int64l_t(0xf2f1, 0));
+    const upx_uint32_t v24 = upx_uint32_t(acc_vget_acc_int64l_t(0xf3f2f1, 0));
+    const upx_uint32_t v32 = upx_uint32_t(acc_vget_acc_int64l_t(0xf4f3f2f1, 0));
+    const upx_uint64_t v64 = upx_uint64_t(acc_vget_acc_int64l_t(0xf8f7f6f5f4f3f2f1ull, 0));
     {
         assert_noexcept(TestCT::noinline_bswap16(v16) == 0xf1f2);
         assert_noexcept(TestCT::noinline_bswap32(v32) == 0xf1f2f3f4);
@@ -1370,10 +1368,10 @@ TEST_CASE("upx::compile_time 2a") {
 }
 
 TEST_CASE("upx::compile_time 2b") {
-    constexpr upx_uint16_t v16 = 0xf2f1;
-    constexpr upx_uint32_t v24 = 0xf3f2f1;
-    constexpr upx_uint32_t v32 = 0xf4f3f2f1;
-    constexpr upx_uint64_t v64 = 0xf8f7f6f5f4f3f2f1ull;
+    const upx_uint16_t v16 = upx_uint16_t(acc_vget_acc_int64l_t(0xf2f1, 0));
+    const upx_uint32_t v24 = upx_uint32_t(acc_vget_acc_int64l_t(0xf3f2f1, 0));
+    const upx_uint32_t v32 = upx_uint32_t(acc_vget_acc_int64l_t(0xf4f3f2f1, 0));
+    const upx_uint64_t v64 = upx_uint64_t(acc_vget_acc_int64l_t(0xf8f7f6f5f4f3f2f1ull, 0));
     {
         assert_noexcept(TestXE::noinline_bswap16(v16) == 0xf1f2);
         assert_noexcept(TestXE::noinline_bswap32(v32) == 0xf1f2f3f4);
@@ -1453,7 +1451,7 @@ TEST_CASE("upx::compile_time 2b") {
 }
 
 TEST_CASE("upx::compile_time 3") {
-    constexpr upx_ptraddr_t p = 1;
+    const upx_ptraddr_t p = upx_ptraddr_t(acc_vget_int(1, 0));
     assert_noexcept(TestCT::noinline_has_single_bit(p));
     assert_noexcept(TestCT::noinline_align_down(p, 8) == 0);
     assert_noexcept(TestCT::noinline_align_down_gap(p, 8) == 1);
@@ -1463,6 +1461,141 @@ TEST_CASE("upx::compile_time 3") {
     assert_noexcept(TestCT::noinline_align_down_gap_16(p) == 1);
     assert_noexcept(TestCT::noinline_align_up_16(p) == 16);
     assert_noexcept(TestCT::noinline_align_up_gap_16(p) == 15);
+}
+
+/*************************************************************************
+// codegen
+**************************************************************************/
+
+namespace {
+template <class T>
+struct TestXX final {
+    template <class U>
+    static noinline const T *noinline_add_ptr(const T *p, U n) noexcept {
+        return p + n;
+    }
+    template <class U>
+    static noinline T noinline_get_ptr(const T *p, U n) noexcept {
+        return p[n];
+    }
+    template <class U>
+    static noinline void noinline_set_ptr(T *p, U n, T v = {}) noexcept {
+        p[n] = v;
+    }
+    template <class U>
+    static noinline T noinline_get_or_1(const T *p, U n) noexcept {
+        return T(p[n] | 1);
+    }
+    template <class U>
+    static noinline void noinline_or_1(T *p, U n) noexcept {
+        p[n] = T(p[n] | 1);
+    }
+};
+} // namespace
+
+TEST_CASE("codegen") {
+    const int n = acc_vget_int(2, 0);
+    {
+        typedef byte T;
+        T buf[4] = {0, 1, 2, 3};
+
+        CHECK_NOTHROW(TestXX<T>::noinline_add_ptr(buf, upx_int8_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_add_ptr(buf, upx_uint8_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_add_ptr(buf, upx_int16_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_add_ptr(buf, upx_uint16_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_add_ptr(buf, upx_int32_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_add_ptr(buf, upx_uint32_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_add_ptr(buf, upx_int64_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_add_ptr(buf, upx_uint64_t(n)));
+
+        CHECK(TestXX<T>::noinline_get_ptr(buf, upx_int8_t(n)) == 2);
+        CHECK(TestXX<T>::noinline_get_ptr(buf, upx_uint8_t(n)) == 2);
+        CHECK(TestXX<T>::noinline_get_ptr(buf, upx_int16_t(n)) == 2);
+        CHECK(TestXX<T>::noinline_get_ptr(buf, upx_uint16_t(n)) == 2);
+        CHECK(TestXX<T>::noinline_get_ptr(buf, upx_int32_t(n)) == 2);
+        CHECK(TestXX<T>::noinline_get_ptr(buf, upx_uint32_t(n)) == 2);
+        CHECK(TestXX<T>::noinline_get_ptr(buf, upx_int64_t(n)) == 2);
+        CHECK(TestXX<T>::noinline_get_ptr(buf, upx_uint64_t(n)) == 2);
+
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_int8_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_uint8_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_int16_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_uint16_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_int32_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_uint32_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_int64_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_uint64_t(n)));
+
+        CHECK(TestXX<T>::noinline_get_or_1(buf, upx_int8_t(n)) == 1);
+        CHECK(TestXX<T>::noinline_get_or_1(buf, upx_uint8_t(n)) == 1);
+        CHECK(TestXX<T>::noinline_get_or_1(buf, upx_int16_t(n)) == 1);
+        CHECK(TestXX<T>::noinline_get_or_1(buf, upx_uint16_t(n)) == 1);
+        CHECK(TestXX<T>::noinline_get_or_1(buf, upx_int32_t(n)) == 1);
+        CHECK(TestXX<T>::noinline_get_or_1(buf, upx_uint32_t(n)) == 1);
+        CHECK(TestXX<T>::noinline_get_or_1(buf, upx_int64_t(n)) == 1);
+        CHECK(TestXX<T>::noinline_get_or_1(buf, upx_uint64_t(n)) == 1);
+
+        CHECK_NOTHROW(TestXX<T>::noinline_or_1(buf, upx_int8_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_or_1(buf, upx_uint8_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_or_1(buf, upx_int16_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_or_1(buf, upx_uint16_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_or_1(buf, upx_int32_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_or_1(buf, upx_uint32_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_or_1(buf, upx_int64_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_or_1(buf, upx_uint64_t(n)));
+        (void) buf;
+    }
+    {
+        typedef upx_int32_t T;
+        T buf[4] = {0, 1, 2, 3};
+
+        CHECK_NOTHROW(TestXX<T>::noinline_add_ptr(buf, upx_int8_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_add_ptr(buf, upx_uint8_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_add_ptr(buf, upx_int16_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_add_ptr(buf, upx_uint16_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_add_ptr(buf, upx_int32_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_add_ptr(buf, upx_uint32_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_add_ptr(buf, upx_int64_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_add_ptr(buf, upx_uint64_t(n)));
+
+        CHECK(TestXX<T>::noinline_get_ptr(buf, upx_int8_t(n)) == 2);
+        CHECK(TestXX<T>::noinline_get_ptr(buf, upx_uint8_t(n)) == 2);
+        CHECK(TestXX<T>::noinline_get_ptr(buf, upx_int16_t(n)) == 2);
+        CHECK(TestXX<T>::noinline_get_ptr(buf, upx_uint16_t(n)) == 2);
+        CHECK(TestXX<T>::noinline_get_ptr(buf, upx_int32_t(n)) == 2);
+        CHECK(TestXX<T>::noinline_get_ptr(buf, upx_uint32_t(n)) == 2);
+        CHECK(TestXX<T>::noinline_get_ptr(buf, upx_int64_t(n)) == 2);
+        CHECK(TestXX<T>::noinline_get_ptr(buf, upx_uint64_t(n)) == 2);
+
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_int8_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_uint8_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_int16_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_uint16_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_int32_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_uint32_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_int64_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_uint64_t(n)));
+
+        CHECK(TestXX<T>::noinline_get_or_1(buf, upx_int8_t(n)) == 1);
+        CHECK(TestXX<T>::noinline_get_or_1(buf, upx_uint8_t(n)) == 1);
+        CHECK(TestXX<T>::noinline_get_or_1(buf, upx_int16_t(n)) == 1);
+        CHECK(TestXX<T>::noinline_get_or_1(buf, upx_uint16_t(n)) == 1);
+        CHECK(TestXX<T>::noinline_get_or_1(buf, upx_int32_t(n)) == 1);
+        CHECK(TestXX<T>::noinline_get_or_1(buf, upx_uint32_t(n)) == 1);
+        CHECK(TestXX<T>::noinline_get_or_1(buf, upx_int64_t(n)) == 1);
+        CHECK(TestXX<T>::noinline_get_or_1(buf, upx_uint64_t(n)) == 1);
+
+        CHECK_NOTHROW(TestXX<T>::noinline_or_1(buf, upx_int8_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_or_1(buf, upx_uint8_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_or_1(buf, upx_int16_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_or_1(buf, upx_uint16_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_or_1(buf, upx_int32_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_or_1(buf, upx_uint32_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_or_1(buf, upx_int64_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_or_1(buf, upx_uint64_t(n)));
+        (void) buf;
+    }
+    (void) n;
 }
 
 /*************************************************************************
