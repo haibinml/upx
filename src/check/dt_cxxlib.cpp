@@ -1452,11 +1452,12 @@ TEST_CASE("upx::compile_time 2b") {
 
 TEST_CASE("upx::compile_time 3") {
     const upx_ptraddr_t p = upx_ptraddr_t(acc_vget_int(1, 0));
+    const upx_ptraddr_t a = upx_ptraddr_t(acc_vget_int(8, 0));
     assert_noexcept(TestCT::noinline_has_single_bit(p));
-    assert_noexcept(TestCT::noinline_align_down(p, 8) == 0);
-    assert_noexcept(TestCT::noinline_align_down_gap(p, 8) == 1);
-    assert_noexcept(TestCT::noinline_align_up(p, 8) == 8);
-    assert_noexcept(TestCT::noinline_align_up_gap(p, 8) == 7);
+    assert_noexcept(TestCT::noinline_align_down(p, a) == 0);
+    assert_noexcept(TestCT::noinline_align_down_gap(p, a) == 1);
+    assert_noexcept(TestCT::noinline_align_up(p, a) == 8);
+    assert_noexcept(TestCT::noinline_align_up_gap(p, a) == 7);
     assert_noexcept(TestCT::noinline_align_down_16(p) == 0);
     assert_noexcept(TestCT::noinline_align_down_gap_16(p) == 1);
     assert_noexcept(TestCT::noinline_align_up_16(p) == 16);
@@ -1489,6 +1490,12 @@ struct TestXX final {
     template <class U>
     static noinline void noinline_or_1(T *p, U n) noexcept {
         p[n] = T(p[n] | 1);
+    }
+
+    template <class U>
+    static noinline auto noinline_get_ptr_promoted(const T *p, U n) noexcept {
+        typedef decltype(U(0) + U(0)) promoted_type;
+        return noinline_get_ptr(p, promoted_type(n));
     }
 };
 } // namespace
@@ -1543,6 +1550,15 @@ TEST_CASE("codegen") {
         CHECK_NOTHROW(TestXX<T>::noinline_or_1(buf, upx_uint32_t(n)));
         CHECK_NOTHROW(TestXX<T>::noinline_or_1(buf, upx_int64_t(n)));
         CHECK_NOTHROW(TestXX<T>::noinline_or_1(buf, upx_uint64_t(n)));
+
+        CHECK_NOTHROW(TestXX<T>::noinline_get_ptr_promoted(buf, upx_int8_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_get_ptr_promoted(buf, upx_uint8_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_get_ptr_promoted(buf, upx_int16_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_get_ptr_promoted(buf, upx_uint16_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_get_ptr_promoted(buf, upx_int32_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_get_ptr_promoted(buf, upx_uint32_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_get_ptr_promoted(buf, upx_int64_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_get_ptr_promoted(buf, upx_uint64_t(n)));
         (void) buf;
     }
     {
@@ -1593,10 +1609,296 @@ TEST_CASE("codegen") {
         CHECK_NOTHROW(TestXX<T>::noinline_or_1(buf, upx_uint32_t(n)));
         CHECK_NOTHROW(TestXX<T>::noinline_or_1(buf, upx_int64_t(n)));
         CHECK_NOTHROW(TestXX<T>::noinline_or_1(buf, upx_uint64_t(n)));
+
+        CHECK_NOTHROW(TestXX<T>::noinline_get_ptr_promoted(buf, upx_int8_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_get_ptr_promoted(buf, upx_uint8_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_get_ptr_promoted(buf, upx_int16_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_get_ptr_promoted(buf, upx_uint16_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_get_ptr_promoted(buf, upx_int32_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_get_ptr_promoted(buf, upx_uint32_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_get_ptr_promoted(buf, upx_int64_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_get_ptr_promoted(buf, upx_uint64_t(n)));
         (void) buf;
     }
     (void) n;
 }
+
+/*************************************************************************
+// bit codegen
+**************************************************************************/
+
+#if __cplusplus >= 202002L // C++20
+
+namespace {
+struct TestBit final {
+#if __cpp_lib_byteswap >= 202110L
+    template <class T>
+    static noinline T noinline_byteswap(T n) noexcept {
+        return std::byteswap(n);
+    }
+#endif
+
+    template <class T>
+    static noinline bool noinline_has_single_bit(T n) noexcept {
+        return std::has_single_bit(n);
+    }
+    template <class T>
+    static noinline T noinline_bit_ceil(T n) noexcept {
+        return std::bit_ceil(n);
+    }
+    template <class T>
+    static noinline T noinline_bit_floor(T n) noexcept {
+        return std::bit_floor(n);
+    }
+    template <class T>
+    static noinline int noinline_bit_width(T n) noexcept {
+        return std::bit_width(n);
+    }
+
+    template <class T>
+    static noinline T noinline_rotl(T n, int s) noexcept {
+        return std::rotl(n, s);
+    }
+    template <class T>
+    static noinline T noinline_rotr(T n, int s) noexcept {
+        return std::rotr(n, s);
+    }
+
+    template <class T>
+    static noinline int noinline_countl_zero(T n) noexcept {
+        return std::countl_zero(n);
+    }
+    template <class T>
+    static noinline int noinline_countl_one(T n) noexcept {
+        return std::countl_one(n);
+    }
+    template <class T>
+    static noinline int noinline_countr_zero(T n) noexcept {
+        return std::countr_zero(n);
+    }
+    template <class T>
+    static noinline int noinline_countr_one(T n) noexcept {
+        return std::countr_one(n);
+    }
+    template <class T>
+    static noinline int noinline_popcount(T n) noexcept {
+        return std::popcount(n);
+    }
+};
+} // namespace
+
+TEST_CASE("bit codegen") {
+    const int s = acc_vget_int(1, 0);
+    int n = acc_vget_int(1, 0);
+    {
+#if __cpp_lib_byteswap >= 202110L
+        CHECK_NOTHROW(TestBit::noinline_byteswap(upx_uint8_t(n)));
+        CHECK_NOTHROW(TestBit::noinline_byteswap(upx_uint16_t(n)));
+        CHECK_NOTHROW(TestBit::noinline_byteswap(upx_uint32_t(n)));
+        CHECK_NOTHROW(TestBit::noinline_byteswap(upx_uint64_t(n)));
+#endif
+
+        CHECK_NOTHROW(TestBit::noinline_has_single_bit(upx_uint8_t(n)));
+        CHECK_NOTHROW(TestBit::noinline_has_single_bit(upx_uint16_t(n)));
+        CHECK_NOTHROW(TestBit::noinline_has_single_bit(upx_uint32_t(n)));
+        CHECK_NOTHROW(TestBit::noinline_has_single_bit(upx_uint64_t(n)));
+
+        CHECK_NOTHROW(TestBit::noinline_bit_ceil(upx_uint8_t(n)));
+        CHECK_NOTHROW(TestBit::noinline_bit_ceil(upx_uint16_t(n)));
+        CHECK_NOTHROW(TestBit::noinline_bit_ceil(upx_uint32_t(n)));
+        CHECK_NOTHROW(TestBit::noinline_bit_ceil(upx_uint64_t(n)));
+
+        CHECK_NOTHROW(TestBit::noinline_bit_floor(upx_uint8_t(n)));
+        CHECK_NOTHROW(TestBit::noinline_bit_floor(upx_uint16_t(n)));
+        CHECK_NOTHROW(TestBit::noinline_bit_floor(upx_uint32_t(n)));
+        CHECK_NOTHROW(TestBit::noinline_bit_floor(upx_uint64_t(n)));
+
+        CHECK_NOTHROW(TestBit::noinline_bit_width(upx_uint8_t(n)));
+        CHECK_NOTHROW(TestBit::noinline_bit_width(upx_uint16_t(n)));
+        CHECK_NOTHROW(TestBit::noinline_bit_width(upx_uint32_t(n)));
+        CHECK_NOTHROW(TestBit::noinline_bit_width(upx_uint64_t(n)));
+
+        CHECK_NOTHROW(TestBit::noinline_rotl(upx_uint8_t(n), s));
+        CHECK_NOTHROW(TestBit::noinline_rotl(upx_uint16_t(n), s));
+        CHECK_NOTHROW(TestBit::noinline_rotl(upx_uint32_t(n), s));
+        CHECK_NOTHROW(TestBit::noinline_rotl(upx_uint64_t(n), s));
+
+        CHECK_NOTHROW(TestBit::noinline_rotr(upx_uint8_t(n), s));
+        CHECK_NOTHROW(TestBit::noinline_rotr(upx_uint16_t(n), s));
+        CHECK_NOTHROW(TestBit::noinline_rotr(upx_uint32_t(n), s));
+        CHECK_NOTHROW(TestBit::noinline_rotr(upx_uint64_t(n), s));
+
+        CHECK_NOTHROW(TestBit::noinline_countl_zero(upx_uint8_t(n)));
+        CHECK_NOTHROW(TestBit::noinline_countl_zero(upx_uint16_t(n)));
+        CHECK_NOTHROW(TestBit::noinline_countl_zero(upx_uint32_t(n)));
+        CHECK_NOTHROW(TestBit::noinline_countl_zero(upx_uint64_t(n)));
+
+        CHECK_NOTHROW(TestBit::noinline_countl_one(upx_uint8_t(n)));
+        CHECK_NOTHROW(TestBit::noinline_countl_one(upx_uint16_t(n)));
+        CHECK_NOTHROW(TestBit::noinline_countl_one(upx_uint32_t(n)));
+        CHECK_NOTHROW(TestBit::noinline_countl_one(upx_uint64_t(n)));
+
+        CHECK_NOTHROW(TestBit::noinline_countr_zero(upx_uint8_t(n)));
+        CHECK_NOTHROW(TestBit::noinline_countr_zero(upx_uint16_t(n)));
+        CHECK_NOTHROW(TestBit::noinline_countr_zero(upx_uint32_t(n)));
+        CHECK_NOTHROW(TestBit::noinline_countr_zero(upx_uint64_t(n)));
+
+        CHECK_NOTHROW(TestBit::noinline_countr_one(upx_uint8_t(n)));
+        CHECK_NOTHROW(TestBit::noinline_countr_one(upx_uint16_t(n)));
+        CHECK_NOTHROW(TestBit::noinline_countr_one(upx_uint32_t(n)));
+        CHECK_NOTHROW(TestBit::noinline_countr_one(upx_uint64_t(n)));
+
+        CHECK_NOTHROW(TestBit::noinline_popcount(upx_uint8_t(n)));
+        CHECK_NOTHROW(TestBit::noinline_popcount(upx_uint16_t(n)));
+        CHECK_NOTHROW(TestBit::noinline_popcount(upx_uint32_t(n)));
+        CHECK_NOTHROW(TestBit::noinline_popcount(upx_uint64_t(n)));
+    }
+    n = acc_vget_int(0, 0);
+    {
+#if __cpp_lib_byteswap >= 202110L
+        CHECK(TestBit::noinline_byteswap(upx_uint8_t(n)) == 0);
+        CHECK(TestBit::noinline_byteswap(upx_uint16_t(n)) == 0);
+        CHECK(TestBit::noinline_byteswap(upx_uint32_t(n)) == 0);
+        CHECK(TestBit::noinline_byteswap(upx_uint64_t(n)) == 0);
+#endif
+
+        CHECK(!TestBit::noinline_has_single_bit(upx_uint8_t(n)));
+        CHECK(!TestBit::noinline_has_single_bit(upx_uint16_t(n)));
+        CHECK(!TestBit::noinline_has_single_bit(upx_uint32_t(n)));
+        CHECK(!TestBit::noinline_has_single_bit(upx_uint64_t(n)));
+
+        CHECK(TestBit::noinline_bit_ceil(upx_uint8_t(n)) == 1);
+        CHECK(TestBit::noinline_bit_ceil(upx_uint16_t(n)) == 1);
+        CHECK(TestBit::noinline_bit_ceil(upx_uint32_t(n)) == 1);
+        CHECK(TestBit::noinline_bit_ceil(upx_uint64_t(n)) == 1);
+
+        CHECK(TestBit::noinline_bit_floor(upx_uint8_t(n)) == 0);
+        CHECK(TestBit::noinline_bit_floor(upx_uint16_t(n)) == 0);
+        CHECK(TestBit::noinline_bit_floor(upx_uint32_t(n)) == 0);
+        CHECK(TestBit::noinline_bit_floor(upx_uint64_t(n)) == 0);
+
+        CHECK(TestBit::noinline_bit_width(upx_uint8_t(n)) == 0);
+        CHECK(TestBit::noinline_bit_width(upx_uint16_t(n)) == 0);
+        CHECK(TestBit::noinline_bit_width(upx_uint32_t(n)) == 0);
+        CHECK(TestBit::noinline_bit_width(upx_uint64_t(n)) == 0);
+
+        CHECK(TestBit::noinline_rotl(upx_uint8_t(n), s) == 0);
+        CHECK(TestBit::noinline_rotl(upx_uint16_t(n), s) == 0);
+        CHECK(TestBit::noinline_rotl(upx_uint32_t(n), s) == 0);
+        CHECK(TestBit::noinline_rotl(upx_uint64_t(n), s) == 0);
+
+        CHECK(TestBit::noinline_rotl(upx_uint8_t(n), -s) == 0);
+        CHECK(TestBit::noinline_rotl(upx_uint16_t(n), -s) == 0);
+        CHECK(TestBit::noinline_rotl(upx_uint32_t(n), -s) == 0);
+        CHECK(TestBit::noinline_rotl(upx_uint64_t(n), -s) == 0);
+
+        CHECK(TestBit::noinline_rotr(upx_uint8_t(n), s) == 0);
+        CHECK(TestBit::noinline_rotr(upx_uint16_t(n), s) == 0);
+        CHECK(TestBit::noinline_rotr(upx_uint32_t(n), s) == 0);
+        CHECK(TestBit::noinline_rotr(upx_uint64_t(n), s) == 0);
+
+        CHECK(TestBit::noinline_rotr(upx_uint8_t(n), -s) == 0);
+        CHECK(TestBit::noinline_rotr(upx_uint16_t(n), -s) == 0);
+        CHECK(TestBit::noinline_rotr(upx_uint32_t(n), -s) == 0);
+        CHECK(TestBit::noinline_rotr(upx_uint64_t(n), -s) == 0);
+
+        CHECK(TestBit::noinline_countl_zero(upx_uint8_t(n)) == 8);
+        CHECK(TestBit::noinline_countl_zero(upx_uint16_t(n)) == 16);
+        CHECK(TestBit::noinline_countl_zero(upx_uint32_t(n)) == 32);
+        CHECK(TestBit::noinline_countl_zero(upx_uint64_t(n)) == 64);
+
+        CHECK(TestBit::noinline_countl_one(upx_uint8_t(n)) == 0);
+        CHECK(TestBit::noinline_countl_one(upx_uint16_t(n)) == 0);
+        CHECK(TestBit::noinline_countl_one(upx_uint32_t(n)) == 0);
+        CHECK(TestBit::noinline_countl_one(upx_uint64_t(n)) == 0);
+
+        CHECK(TestBit::noinline_countr_zero(upx_uint8_t(n)) == 8);
+        CHECK(TestBit::noinline_countr_zero(upx_uint16_t(n)) == 16);
+        CHECK(TestBit::noinline_countr_zero(upx_uint32_t(n)) == 32);
+        CHECK(TestBit::noinline_countr_zero(upx_uint64_t(n)) == 64);
+
+        CHECK(TestBit::noinline_countr_one(upx_uint8_t(n)) == 0);
+        CHECK(TestBit::noinline_countr_one(upx_uint16_t(n)) == 0);
+        CHECK(TestBit::noinline_countr_one(upx_uint32_t(n)) == 0);
+        CHECK(TestBit::noinline_countr_one(upx_uint64_t(n)) == 0);
+
+        CHECK(TestBit::noinline_popcount(upx_uint8_t(n)) == 0);
+        CHECK(TestBit::noinline_popcount(upx_uint16_t(n)) == 0);
+        CHECK(TestBit::noinline_popcount(upx_uint32_t(n)) == 0);
+        CHECK(TestBit::noinline_popcount(upx_uint64_t(n)) == 0);
+    }
+    n = acc_vget_int(6, 0);
+    {
+        CHECK(!TestBit::noinline_has_single_bit(upx_uint8_t(n)));
+        CHECK(!TestBit::noinline_has_single_bit(upx_uint16_t(n)));
+        CHECK(!TestBit::noinline_has_single_bit(upx_uint32_t(n)));
+        CHECK(!TestBit::noinline_has_single_bit(upx_uint64_t(n)));
+
+        CHECK(TestBit::noinline_bit_ceil(upx_uint8_t(n)) == 8);
+        CHECK(TestBit::noinline_bit_ceil(upx_uint16_t(n)) == 8);
+        CHECK(TestBit::noinline_bit_ceil(upx_uint32_t(n)) == 8);
+        CHECK(TestBit::noinline_bit_ceil(upx_uint64_t(n)) == 8);
+
+        CHECK(TestBit::noinline_bit_floor(upx_uint8_t(n)) == 4);
+        CHECK(TestBit::noinline_bit_floor(upx_uint16_t(n)) == 4);
+        CHECK(TestBit::noinline_bit_floor(upx_uint32_t(n)) == 4);
+        CHECK(TestBit::noinline_bit_floor(upx_uint64_t(n)) == 4);
+
+        CHECK(TestBit::noinline_bit_width(upx_uint8_t(n)) == 3);
+        CHECK(TestBit::noinline_bit_width(upx_uint16_t(n)) == 3);
+        CHECK(TestBit::noinline_bit_width(upx_uint32_t(n)) == 3);
+        CHECK(TestBit::noinline_bit_width(upx_uint64_t(n)) == 3);
+
+        CHECK(TestBit::noinline_rotl(upx_uint8_t(n), s) == 12);
+        CHECK(TestBit::noinline_rotl(upx_uint16_t(n), s) == 12);
+        CHECK(TestBit::noinline_rotl(upx_uint32_t(n), s) == 12);
+        CHECK(TestBit::noinline_rotl(upx_uint64_t(n), s) == 12);
+
+        CHECK(TestBit::noinline_rotl(upx_uint8_t(n), -s) == 3);
+        CHECK(TestBit::noinline_rotl(upx_uint16_t(n), -s) == 3);
+        CHECK(TestBit::noinline_rotl(upx_uint32_t(n), -s) == 3);
+        CHECK(TestBit::noinline_rotl(upx_uint64_t(n), -s) == 3);
+
+        CHECK(TestBit::noinline_rotr(upx_uint8_t(n), s) == 3);
+        CHECK(TestBit::noinline_rotr(upx_uint16_t(n), s) == 3);
+        CHECK(TestBit::noinline_rotr(upx_uint32_t(n), s) == 3);
+        CHECK(TestBit::noinline_rotr(upx_uint64_t(n), s) == 3);
+
+        CHECK(TestBit::noinline_rotr(upx_uint8_t(n), -s) == 12);
+        CHECK(TestBit::noinline_rotr(upx_uint16_t(n), -s) == 12);
+        CHECK(TestBit::noinline_rotr(upx_uint32_t(n), -s) == 12);
+        CHECK(TestBit::noinline_rotr(upx_uint64_t(n), -s) == 12);
+
+        CHECK(TestBit::noinline_countl_zero(upx_uint8_t(n)) == 5);
+        CHECK(TestBit::noinline_countl_zero(upx_uint16_t(n)) == 13);
+        CHECK(TestBit::noinline_countl_zero(upx_uint32_t(n)) == 29);
+        CHECK(TestBit::noinline_countl_zero(upx_uint64_t(n)) == 61);
+
+        CHECK(TestBit::noinline_countl_one(upx_uint8_t(n)) == 0);
+        CHECK(TestBit::noinline_countl_one(upx_uint16_t(n)) == 0);
+        CHECK(TestBit::noinline_countl_one(upx_uint32_t(n)) == 0);
+        CHECK(TestBit::noinline_countl_one(upx_uint64_t(n)) == 0);
+
+        CHECK(TestBit::noinline_countr_zero(upx_uint8_t(n)) == 1);
+        CHECK(TestBit::noinline_countr_zero(upx_uint16_t(n)) == 1);
+        CHECK(TestBit::noinline_countr_zero(upx_uint32_t(n)) == 1);
+        CHECK(TestBit::noinline_countr_zero(upx_uint64_t(n)) == 1);
+
+        CHECK(TestBit::noinline_countr_one(upx_uint8_t(n)) == 0);
+        CHECK(TestBit::noinline_countr_one(upx_uint16_t(n)) == 0);
+        CHECK(TestBit::noinline_countr_one(upx_uint32_t(n)) == 0);
+        CHECK(TestBit::noinline_countr_one(upx_uint64_t(n)) == 0);
+
+        CHECK(TestBit::noinline_popcount(upx_uint8_t(n)) == 2);
+        CHECK(TestBit::noinline_popcount(upx_uint16_t(n)) == 2);
+        CHECK(TestBit::noinline_popcount(upx_uint32_t(n)) == 2);
+        CHECK(TestBit::noinline_popcount(upx_uint64_t(n)) == 2);
+    }
+    (void) s;
+    (void) n;
+}
+
+#endif // C++20
 
 /*************************************************************************
 // TriBool

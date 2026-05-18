@@ -217,6 +217,10 @@ jobs:
           [[ $toolchain == i686-w64-mingw32 ]] && export UPX_CONFIG_DISABLE_SELF_PACK_TEST=OFF
           [[ $toolchain == x86_64-w64-mingw32  ]] && export UPX_CONFIG_DISABLE_SELF_PACK_TEST=OFF
           echo "UPX_CONFIG_DISABLE_SELF_PACK_TEST=$UPX_CONFIG_DISABLE_SELF_PACK_TEST" >> $GITHUB_ENV
+          if [[ 1 == 1 ]]; then true;
+            export CXX="$CXX -std=gnu++2a"
+            export UPX_CONFIG_DISABLE_CXX_STANDARD=ON
+          fi
           echo -e "CC=$CC\nCXX=$CXX" >> $GITHUB_ENV
           make UPX_XTARGET=xtarget/${toolchain} xtarget/all
 
