@@ -1190,7 +1190,7 @@ struct alignas(1) TestXE final {
 };
 } // namespace
 
-TEST_CASE("upx::compile_time 1") {
+TEST_CASE("upx::compile_time") {
     constexpr upx_uint16_t v16 = 0x0201;
     constexpr upx_uint32_t v24 = 0x030201;
     constexpr upx_uint32_t v32 = 0x04030201;
@@ -1308,7 +1308,7 @@ TEST_CASE("upx::compile_time 1") {
     }
 }
 
-TEST_CASE("upx::compile_time 2a") {
+TEST_CASE("upx::run_time 1a") {
     const upx_uint16_t v16 = upx_uint16_t(acc_vget_acc_int64l_t(0xf2f1, 0));
     const upx_uint32_t v24 = upx_uint32_t(acc_vget_acc_int64l_t(0xf3f2f1, 0));
     const upx_uint32_t v32 = upx_uint32_t(acc_vget_acc_int64l_t(0xf4f3f2f1, 0));
@@ -1367,7 +1367,7 @@ TEST_CASE("upx::compile_time 2a") {
     }
 }
 
-TEST_CASE("upx::compile_time 2b") {
+TEST_CASE("upx::run_time 1b") {
     const upx_uint16_t v16 = upx_uint16_t(acc_vget_acc_int64l_t(0xf2f1, 0));
     const upx_uint32_t v24 = upx_uint32_t(acc_vget_acc_int64l_t(0xf3f2f1, 0));
     const upx_uint32_t v32 = upx_uint32_t(acc_vget_acc_int64l_t(0xf4f3f2f1, 0));
@@ -1450,7 +1450,7 @@ TEST_CASE("upx::compile_time 2b") {
     }
 }
 
-TEST_CASE("upx::compile_time 3") {
+TEST_CASE("upx::run_time 2") {
     const upx_ptraddr_t p = upx_ptraddr_t(acc_vget_int(1, 0));
     const upx_ptraddr_t a = upx_ptraddr_t(acc_vget_int(8, 0));
     assert_noexcept(TestCT::noinline_has_single_bit(p));
@@ -1480,7 +1480,7 @@ struct TestXX final {
         return p[n];
     }
     template <class U>
-    static noinline void noinline_set_ptr(T *p, U n, T v = {}) noexcept {
+    static noinline void noinline_set_ptr(T *p, U n, T v) noexcept {
         p[n] = v;
     }
     template <class U>
@@ -1505,15 +1505,16 @@ TEST_CASE("codegen") {
     {
         typedef byte T;
         T buf[4] = {0, 1, 2, 3};
+        const T v = T(acc_vget_int(0, 0));
 
-        CHECK_NOTHROW(TestXX<T>::noinline_add_ptr(buf, upx_int8_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_add_ptr(buf, upx_uint8_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_add_ptr(buf, upx_int16_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_add_ptr(buf, upx_uint16_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_add_ptr(buf, upx_int32_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_add_ptr(buf, upx_uint32_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_add_ptr(buf, upx_int64_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_add_ptr(buf, upx_uint64_t(n)));
+        CHECK(TestXX<T>::noinline_add_ptr(buf, upx_int8_t(n)) == buf + n);
+        CHECK(TestXX<T>::noinline_add_ptr(buf, upx_uint8_t(n)) == buf + n);
+        CHECK(TestXX<T>::noinline_add_ptr(buf, upx_int16_t(n)) == buf + n);
+        CHECK(TestXX<T>::noinline_add_ptr(buf, upx_uint16_t(n)) == buf + n);
+        CHECK(TestXX<T>::noinline_add_ptr(buf, upx_int32_t(n)) == buf + n);
+        CHECK(TestXX<T>::noinline_add_ptr(buf, upx_uint32_t(n)) == buf + n);
+        CHECK(TestXX<T>::noinline_add_ptr(buf, upx_int64_t(n)) == buf + n);
+        CHECK(TestXX<T>::noinline_add_ptr(buf, upx_uint64_t(n)) == buf + n);
 
         CHECK(TestXX<T>::noinline_get_ptr(buf, upx_int8_t(n)) == 2);
         CHECK(TestXX<T>::noinline_get_ptr(buf, upx_uint8_t(n)) == 2);
@@ -1524,14 +1525,14 @@ TEST_CASE("codegen") {
         CHECK(TestXX<T>::noinline_get_ptr(buf, upx_int64_t(n)) == 2);
         CHECK(TestXX<T>::noinline_get_ptr(buf, upx_uint64_t(n)) == 2);
 
-        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_int8_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_uint8_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_int16_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_uint16_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_int32_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_uint32_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_int64_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_uint64_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_int8_t(n), v));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_uint8_t(n), v));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_int16_t(n), v));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_uint16_t(n), v));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_int32_t(n), v));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_uint32_t(n), v));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_int64_t(n), v));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_uint64_t(n), v));
 
         CHECK(TestXX<T>::noinline_get_or_1(buf, upx_int8_t(n)) == 1);
         CHECK(TestXX<T>::noinline_get_or_1(buf, upx_uint8_t(n)) == 1);
@@ -1551,28 +1552,31 @@ TEST_CASE("codegen") {
         CHECK_NOTHROW(TestXX<T>::noinline_or_1(buf, upx_int64_t(n)));
         CHECK_NOTHROW(TestXX<T>::noinline_or_1(buf, upx_uint64_t(n)));
 
-        CHECK_NOTHROW(TestXX<T>::noinline_get_ptr_promoted(buf, upx_int8_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_get_ptr_promoted(buf, upx_uint8_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_get_ptr_promoted(buf, upx_int16_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_get_ptr_promoted(buf, upx_uint16_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_get_ptr_promoted(buf, upx_int32_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_get_ptr_promoted(buf, upx_uint32_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_get_ptr_promoted(buf, upx_int64_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_get_ptr_promoted(buf, upx_uint64_t(n)));
+        CHECK((TestXX<T>::noinline_get_ptr_promoted(buf, upx_int8_t(n)) == 1));
+        CHECK((TestXX<T>::noinline_get_ptr_promoted(buf, upx_uint8_t(n)) == 1));
+        CHECK((TestXX<T>::noinline_get_ptr_promoted(buf, upx_int16_t(n)) == 1));
+        CHECK((TestXX<T>::noinline_get_ptr_promoted(buf, upx_uint16_t(n)) == 1));
+        CHECK((TestXX<T>::noinline_get_ptr_promoted(buf, upx_int32_t(n)) == 1));
+        CHECK((TestXX<T>::noinline_get_ptr_promoted(buf, upx_uint32_t(n)) == 1));
+        CHECK((TestXX<T>::noinline_get_ptr_promoted(buf, upx_int64_t(n)) == 1));
+        CHECK((TestXX<T>::noinline_get_ptr_promoted(buf, upx_uint64_t(n)) == 1));
+
         (void) buf;
+        (void) v;
     }
     {
         typedef upx_int32_t T;
         T buf[4] = {0, 1, 2, 3};
+        const T v = T(acc_vget_int(0, 0));
 
-        CHECK_NOTHROW(TestXX<T>::noinline_add_ptr(buf, upx_int8_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_add_ptr(buf, upx_uint8_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_add_ptr(buf, upx_int16_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_add_ptr(buf, upx_uint16_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_add_ptr(buf, upx_int32_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_add_ptr(buf, upx_uint32_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_add_ptr(buf, upx_int64_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_add_ptr(buf, upx_uint64_t(n)));
+        CHECK(TestXX<T>::noinline_add_ptr(buf, upx_int8_t(n)) == buf + n);
+        CHECK(TestXX<T>::noinline_add_ptr(buf, upx_uint8_t(n)) == buf + n);
+        CHECK(TestXX<T>::noinline_add_ptr(buf, upx_int16_t(n)) == buf + n);
+        CHECK(TestXX<T>::noinline_add_ptr(buf, upx_uint16_t(n)) == buf + n);
+        CHECK(TestXX<T>::noinline_add_ptr(buf, upx_int32_t(n)) == buf + n);
+        CHECK(TestXX<T>::noinline_add_ptr(buf, upx_uint32_t(n)) == buf + n);
+        CHECK(TestXX<T>::noinline_add_ptr(buf, upx_int64_t(n)) == buf + n);
+        CHECK(TestXX<T>::noinline_add_ptr(buf, upx_uint64_t(n)) == buf + n);
 
         CHECK(TestXX<T>::noinline_get_ptr(buf, upx_int8_t(n)) == 2);
         CHECK(TestXX<T>::noinline_get_ptr(buf, upx_uint8_t(n)) == 2);
@@ -1583,14 +1587,14 @@ TEST_CASE("codegen") {
         CHECK(TestXX<T>::noinline_get_ptr(buf, upx_int64_t(n)) == 2);
         CHECK(TestXX<T>::noinline_get_ptr(buf, upx_uint64_t(n)) == 2);
 
-        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_int8_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_uint8_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_int16_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_uint16_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_int32_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_uint32_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_int64_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_uint64_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_int8_t(n), v));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_uint8_t(n), v));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_int16_t(n), v));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_uint16_t(n), v));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_int32_t(n), v));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_uint32_t(n), v));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_int64_t(n), v));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_uint64_t(n), v));
 
         CHECK(TestXX<T>::noinline_get_or_1(buf, upx_int8_t(n)) == 1);
         CHECK(TestXX<T>::noinline_get_or_1(buf, upx_uint8_t(n)) == 1);
@@ -1610,15 +1614,79 @@ TEST_CASE("codegen") {
         CHECK_NOTHROW(TestXX<T>::noinline_or_1(buf, upx_int64_t(n)));
         CHECK_NOTHROW(TestXX<T>::noinline_or_1(buf, upx_uint64_t(n)));
 
-        CHECK_NOTHROW(TestXX<T>::noinline_get_ptr_promoted(buf, upx_int8_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_get_ptr_promoted(buf, upx_uint8_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_get_ptr_promoted(buf, upx_int16_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_get_ptr_promoted(buf, upx_uint16_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_get_ptr_promoted(buf, upx_int32_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_get_ptr_promoted(buf, upx_uint32_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_get_ptr_promoted(buf, upx_int64_t(n)));
-        CHECK_NOTHROW(TestXX<T>::noinline_get_ptr_promoted(buf, upx_uint64_t(n)));
+        CHECK((TestXX<T>::noinline_get_ptr_promoted(buf, upx_int8_t(n)) == 1));
+        CHECK((TestXX<T>::noinline_get_ptr_promoted(buf, upx_uint8_t(n)) == 1));
+        CHECK((TestXX<T>::noinline_get_ptr_promoted(buf, upx_int16_t(n)) == 1));
+        CHECK((TestXX<T>::noinline_get_ptr_promoted(buf, upx_uint16_t(n)) == 1));
+        CHECK((TestXX<T>::noinline_get_ptr_promoted(buf, upx_int32_t(n)) == 1));
+        CHECK((TestXX<T>::noinline_get_ptr_promoted(buf, upx_uint32_t(n)) == 1));
+        CHECK((TestXX<T>::noinline_get_ptr_promoted(buf, upx_int64_t(n)) == 1));
+        CHECK((TestXX<T>::noinline_get_ptr_promoted(buf, upx_uint64_t(n)) == 1));
+
         (void) buf;
+        (void) v;
+    }
+    {
+        typedef upx_uint64_t T;
+        T buf[4] = {0, 1, 2, 3};
+        const T v = T(acc_vget_int(0, 0));
+
+        CHECK(TestXX<T>::noinline_add_ptr(buf, upx_int8_t(n)) == buf + n);
+        CHECK(TestXX<T>::noinline_add_ptr(buf, upx_uint8_t(n)) == buf + n);
+        CHECK(TestXX<T>::noinline_add_ptr(buf, upx_int16_t(n)) == buf + n);
+        CHECK(TestXX<T>::noinline_add_ptr(buf, upx_uint16_t(n)) == buf + n);
+        CHECK(TestXX<T>::noinline_add_ptr(buf, upx_int32_t(n)) == buf + n);
+        CHECK(TestXX<T>::noinline_add_ptr(buf, upx_uint32_t(n)) == buf + n);
+        CHECK(TestXX<T>::noinline_add_ptr(buf, upx_int64_t(n)) == buf + n);
+        CHECK(TestXX<T>::noinline_add_ptr(buf, upx_uint64_t(n)) == buf + n);
+
+        CHECK(TestXX<T>::noinline_get_ptr(buf, upx_int8_t(n)) == 2);
+        CHECK(TestXX<T>::noinline_get_ptr(buf, upx_uint8_t(n)) == 2);
+        CHECK(TestXX<T>::noinline_get_ptr(buf, upx_int16_t(n)) == 2);
+        CHECK(TestXX<T>::noinline_get_ptr(buf, upx_uint16_t(n)) == 2);
+        CHECK(TestXX<T>::noinline_get_ptr(buf, upx_int32_t(n)) == 2);
+        CHECK(TestXX<T>::noinline_get_ptr(buf, upx_uint32_t(n)) == 2);
+        CHECK(TestXX<T>::noinline_get_ptr(buf, upx_int64_t(n)) == 2);
+        CHECK(TestXX<T>::noinline_get_ptr(buf, upx_uint64_t(n)) == 2);
+
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_int8_t(n), v));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_uint8_t(n), v));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_int16_t(n), v));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_uint16_t(n), v));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_int32_t(n), v));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_uint32_t(n), v));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_int64_t(n), v));
+        CHECK_NOTHROW(TestXX<T>::noinline_set_ptr(buf, upx_uint64_t(n), v));
+
+        CHECK(TestXX<T>::noinline_get_or_1(buf, upx_int8_t(n)) == 1);
+        CHECK(TestXX<T>::noinline_get_or_1(buf, upx_uint8_t(n)) == 1);
+        CHECK(TestXX<T>::noinline_get_or_1(buf, upx_int16_t(n)) == 1);
+        CHECK(TestXX<T>::noinline_get_or_1(buf, upx_uint16_t(n)) == 1);
+        CHECK(TestXX<T>::noinline_get_or_1(buf, upx_int32_t(n)) == 1);
+        CHECK(TestXX<T>::noinline_get_or_1(buf, upx_uint32_t(n)) == 1);
+        CHECK(TestXX<T>::noinline_get_or_1(buf, upx_int64_t(n)) == 1);
+        CHECK(TestXX<T>::noinline_get_or_1(buf, upx_uint64_t(n)) == 1);
+
+        CHECK_NOTHROW(TestXX<T>::noinline_or_1(buf, upx_int8_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_or_1(buf, upx_uint8_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_or_1(buf, upx_int16_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_or_1(buf, upx_uint16_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_or_1(buf, upx_int32_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_or_1(buf, upx_uint32_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_or_1(buf, upx_int64_t(n)));
+        CHECK_NOTHROW(TestXX<T>::noinline_or_1(buf, upx_uint64_t(n)));
+
+        CHECK((TestXX<T>::noinline_get_ptr_promoted(buf, upx_int8_t(n)) == 1));
+        CHECK((TestXX<T>::noinline_get_ptr_promoted(buf, upx_uint8_t(n)) == 1));
+        CHECK((TestXX<T>::noinline_get_ptr_promoted(buf, upx_int16_t(n)) == 1));
+        CHECK((TestXX<T>::noinline_get_ptr_promoted(buf, upx_uint16_t(n)) == 1));
+        CHECK((TestXX<T>::noinline_get_ptr_promoted(buf, upx_int32_t(n)) == 1));
+        CHECK((TestXX<T>::noinline_get_ptr_promoted(buf, upx_uint32_t(n)) == 1));
+        CHECK((TestXX<T>::noinline_get_ptr_promoted(buf, upx_int64_t(n)) == 1));
+        CHECK((TestXX<T>::noinline_get_ptr_promoted(buf, upx_uint64_t(n)) == 1));
+
+        (void) buf;
+        (void) v;
     }
     (void) n;
 }
@@ -1628,6 +1696,16 @@ TEST_CASE("codegen") {
 **************************************************************************/
 
 #if __cplusplus >= 202002L // C++20
+
+#if (ACC_ABI_BIG_ENDIAN)
+static_assert(std::endian::native == std::endian::big);
+static_assert(std::endian::native != std::endian::little);
+#elif (ACC_ABI_LITTLE_ENDIAN)
+static_assert(std::endian::native == std::endian::little);
+static_assert(std::endian::native != std::endian::big);
+#else
+#error "ACC_ABI_ENDIAN"
+#endif
 
 namespace {
 struct TestBit final {
