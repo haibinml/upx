@@ -131,6 +131,10 @@ jobs:
             gcc)   CC="gcc $xflags";   CXX="g++ $xflags" ;;
             *)     exit 99 ;;
           esac
+          if [[ "${{ matrix.container }}" == *'alpine:3.23' ]]; then true;
+            export CXX="$CXX -std=gnu++23"
+            echo "UPX_CONFIG_DISABLE_CXX_STANDARD=ON" >> $GITHUB_ENV
+          fi
           echo -e "CC=$CC\nCXX=$CXX" >> $GITHUB_ENV
       - run: set -x; $CC --version; $CXX --version
       - run: $CC  -E -x c   -dM /dev/null | LC_ALL=C sort
