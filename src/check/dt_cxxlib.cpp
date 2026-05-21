@@ -1468,6 +1468,11 @@ TEST_CASE("upx::run_time 2") {
 // codegen
 **************************************************************************/
 
+#if (ACC_CC_MSC)
+#pragma warning(push)
+#pragma warning(disable : 4310) // warning C4310: cast truncates constant value
+#endif
+
 namespace {
 struct TestConstant final {
     template <class T>
@@ -1481,6 +1486,18 @@ struct TestConstant final {
     template <class T>
     static noinline T noinline_minus_one(T) noexcept {
         return T(T(0) - T(1));
+    }
+    template <class T>
+    static noinline T noinline_0xff(T) noexcept {
+        return T(0xff);
+    }
+    template <class T>
+    static noinline T noinline_0xffff(T) noexcept {
+        return T(0xffff);
+    }
+    template <class T>
+    static noinline T noinline_0xffffffff(T) noexcept {
+        return T(0xffffffff);
     }
 };
 template <class T>
@@ -1549,6 +1566,33 @@ TEST_CASE("codegen constant") {
         assert_noexcept((TestConstant::noinline_minus_one(upx_int64_t(n)) == -1));
         assert_noexcept(
             (TestConstant::noinline_minus_one(upx_uint64_t(n)) == 0xffffffffffffffffULL));
+
+        assert_noexcept((TestConstant::noinline_0xff(upx_int8_t(n)) == -1));
+        assert_noexcept((TestConstant::noinline_0xff(upx_uint8_t(n)) == 0xff));
+        assert_noexcept((TestConstant::noinline_0xff(upx_int16_t(n)) == 0xff));
+        assert_noexcept((TestConstant::noinline_0xff(upx_uint16_t(n)) == 0xff));
+        assert_noexcept((TestConstant::noinline_0xff(upx_int32_t(n)) == 0xff));
+        assert_noexcept((TestConstant::noinline_0xff(upx_uint32_t(n)) == 0xff));
+        assert_noexcept((TestConstant::noinline_0xff(upx_int64_t(n)) == 0xff));
+        assert_noexcept((TestConstant::noinline_0xff(upx_uint64_t(n)) == 0xff));
+
+        assert_noexcept((TestConstant::noinline_0xffff(upx_int8_t(n)) == -1));
+        assert_noexcept((TestConstant::noinline_0xffff(upx_uint8_t(n)) == 0xff));
+        assert_noexcept((TestConstant::noinline_0xffff(upx_int16_t(n)) == -1));
+        assert_noexcept((TestConstant::noinline_0xffff(upx_uint16_t(n)) == 0xffff));
+        assert_noexcept((TestConstant::noinline_0xffff(upx_int32_t(n)) == 0xffff));
+        assert_noexcept((TestConstant::noinline_0xffff(upx_uint32_t(n)) == 0xffff));
+        assert_noexcept((TestConstant::noinline_0xffff(upx_int64_t(n)) == 0xffff));
+        assert_noexcept((TestConstant::noinline_0xffff(upx_uint64_t(n)) == 0xffff));
+
+        assert_noexcept((TestConstant::noinline_0xffffffff(upx_int8_t(n)) == -1));
+        assert_noexcept((TestConstant::noinline_0xffffffff(upx_uint8_t(n)) == 0xff));
+        assert_noexcept((TestConstant::noinline_0xffffffff(upx_int16_t(n)) == -1));
+        assert_noexcept((TestConstant::noinline_0xffffffff(upx_uint16_t(n)) == 0xffff));
+        assert_noexcept((TestConstant::noinline_0xffffffff(upx_int32_t(n)) == -1));
+        assert_noexcept((TestConstant::noinline_0xffffffff(upx_uint32_t(n)) == 0xffffffff));
+        assert_noexcept((TestConstant::noinline_0xffffffff(upx_int64_t(n)) == 0xffffffff));
+        assert_noexcept((TestConstant::noinline_0xffffffff(upx_uint64_t(n)) == 0xffffffff));
     }
     (void) n;
 }
@@ -1771,6 +1815,10 @@ TEST_CASE("codegen") {
     (void) n;
 }
 
+#if (ACC_CC_MSC)
+#pragma warning(pop)
+#endif
+
 /*************************************************************************
 // bit codegen
 **************************************************************************/
@@ -1789,6 +1837,11 @@ static_assert(std::endian::native != std::endian::big);
 
 namespace {
 struct TestBit final {
+    template <class T>
+    static noinline T noinline_bit_cast(T from) noexcept {
+        return std::bit_cast<T>(from);
+    }
+
 #if __cpp_lib_byteswap >= 202110L
     template <class T>
     static noinline T noinline_byteswap(T n) noexcept {
@@ -1849,6 +1902,11 @@ TEST_CASE("bit codegen") {
     const int s = acc_vget_int(1, 0);
     int n = acc_vget_int(1, 0);
     {
+        CHECK_NOTHROW(TestBit::noinline_bit_cast(upx_uint8_t(n)));
+        CHECK_NOTHROW(TestBit::noinline_bit_cast(upx_uint16_t(n)));
+        CHECK_NOTHROW(TestBit::noinline_bit_cast(upx_uint32_t(n)));
+        CHECK_NOTHROW(TestBit::noinline_bit_cast(upx_uint64_t(n)));
+
 #if __cpp_lib_byteswap >= 202110L
         CHECK_NOTHROW(TestBit::noinline_byteswap(upx_uint8_t(n)));
         CHECK_NOTHROW(TestBit::noinline_byteswap(upx_uint16_t(n)));
@@ -1913,6 +1971,11 @@ TEST_CASE("bit codegen") {
     }
     n = acc_vget_int(0, 0);
     {
+        CHECK(TestBit::noinline_bit_cast(upx_uint8_t(n)) == 0);
+        CHECK(TestBit::noinline_bit_cast(upx_uint16_t(n)) == 0);
+        CHECK(TestBit::noinline_bit_cast(upx_uint32_t(n)) == 0);
+        CHECK(TestBit::noinline_bit_cast(upx_uint64_t(n)) == 0);
+
 #if __cpp_lib_byteswap >= 202110L
         CHECK(TestBit::noinline_byteswap(upx_uint8_t(n)) == 0);
         CHECK(TestBit::noinline_byteswap(upx_uint16_t(n)) == 0);

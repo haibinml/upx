@@ -185,6 +185,7 @@ jobs:
       - run: g++     -E -x c++ -dM /dev/null | LC_ALL=C sort # list predefined macros for C++
       - run: make build/extra/clang/all
       - run: make build/extra/gcc/all
+      - run: make build/extra/gcc-std-cxx20/all
       - run: ls -l build/*/*/*/upx* || true
       - run: size  build/*/*/*/upx* || true
       - run: file  build/*/*/*/upx* || true
@@ -531,8 +532,8 @@ jobs:
           # { name: windows-11-arm64x,  os: windows-11-arm, vsversion: 2022, vsarch: arm64, use_arm64x: true }
           - { name: windows-2022-amd64, os: windows-2022,   vsversion: 2022, vsarch: amd64 }
           - { name: windows-2022-i386,  os: windows-2022,   vsversion: 2022, vsarch: amd64_x86 }
-          - { name: windows-2026-amd64, os: windows-2025-vs2026, vsversion: 2026, vsarch: amd64 }
-          - { name: windows-2026-i386,  os: windows-2025-vs2026, vsversion: 2026, vsarch: amd64_x86 }
+          # { name: windows-2026-amd64, os: windows-2025-vs2026, vsversion: 2026, vsarch: amd64 }
+          # { name: windows-2026-i386,  os: windows-2025-vs2026, vsversion: 2026, vsarch: amd64_x86 }
     name: ${{ format('{0}', matrix.name) }}
     runs-on: ${{ matrix.os }}
     steps:
@@ -613,11 +614,11 @@ jobs:
           - { name: arm64ec-win64-vs2022, os: windows-2022, vsversion: 2022, vsarch: amd64_arm64, cl_machine_flags: -arm64EC, link_machine_flags: '/machine:arm64ec' }
           # { name: arm64x-win64-vs2022,  os: windows-2022, vsversion: 2022, vsarch: amd64_arm64, cl_machine_flags: -arm64EC, link_machine_flags: '/machine:arm64x' }
           - { name: i386-win32-vs2022,    os: windows-2022, vsversion: 2022, vsarch: amd64_x86 }
-          - { name: amd64-win64-vs2026,   os: windows-2025-vs2026, vsversion: 18.0, vsarch: amd64 }
-          - { name: arm64-win64-vs2026,   os: windows-2025-vs2026, vsversion: 18.0, vsarch: amd64_arm64 }
-          - { name: arm64ec-win64-vs2026, os: windows-2025-vs2026, vsversion: 18.0, vsarch: amd64_arm64, cl_machine_flags: -arm64EC, link_machine_flags: '/machine:arm64ec' }
+          # { name: amd64-win64-vs2026,   os: windows-2025-vs2026, vsversion: 18.0, vsarch: amd64 }
+          # { name: arm64-win64-vs2026,   os: windows-2025-vs2026, vsversion: 18.0, vsarch: amd64_arm64 }
+          # { name: arm64ec-win64-vs2026, os: windows-2025-vs2026, vsversion: 18.0, vsarch: amd64_arm64, cl_machine_flags: -arm64EC, link_machine_flags: '/machine:arm64ec' }
           # { name: arm64x-win64-vs2026,  os: windows-2025-vs2026, vsversion: 18.0, vsarch: amd64_arm64, cl_machine_flags: -arm64EC, link_machine_flags: '/machine:arm64x' }
-          - { name: i386-win32-vs2026,    os: windows-2025-vs2026, vsversion: 18.0, vsarch: amd64_x86 }
+          # { name: i386-win32-vs2026,    os: windows-2025-vs2026, vsversion: 18.0, vsarch: amd64_x86 }
     name: ${{ format('windows-bh {0}', matrix.name) }}
     runs-on: ${{ matrix.os }}
     env:
