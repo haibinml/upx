@@ -201,6 +201,13 @@ jobs:
               CC="$CC -D_WIN32_WINNT=0x0501"; CXX="$CXX -D_WIN32_WINNT=0x0501"
               CC="$CC -static"; CXX="$CXX -static" ;;
           esac
+          if [[ $toolchain == riscv64-linux-gnu ]]; then true;
+            #export CXX="$CXX -mno-strict-align"
+          fi
+          if [[ "${{ matrix.container }}" == ubuntu:2[46].04 && $toolchain == riscv64-linux-gnu ]]; then true;
+            #export CXX="$CXX -mtune=generic-ooo"
+            export CXX="$CXX -mtune=thead-c906"
+          fi
           export UPX_CONFIG_DISABLE_SELF_PACK_TEST=ON
           [[ $toolchain == aarch64-linux-gnu ]] && export UPX_CONFIG_DISABLE_SELF_PACK_TEST=OFF
           [[ $toolchain == arm-linux-gnu* ]] && export UPX_CONFIG_DISABLE_SELF_PACK_TEST=OFF
@@ -214,6 +221,7 @@ jobs:
           [[ $toolchain == riscv64-linux-gnu ]] && export UPX_CONFIG_DISABLE_SELF_PACK_TEST=OFF
           [[ $toolchain == x86_64-linux-gnu ]] && export UPX_CONFIG_DISABLE_SELF_PACK_TEST=OFF
           [[ "${{ matrix.container }}" == 'ubuntu:20.04' ]] && export UPX_CONFIG_DISABLE_SELF_PACK_TEST=ON
+          [[ "${{ matrix.container }}" == 'ubuntu:22.04' && $toolchain == riscv64-linux-gnu ]] && export UPX_CONFIG_DISABLE_SELF_PACK_TEST=ON
           [[ $toolchain == i686-w64-mingw32 ]] && export UPX_CONFIG_DISABLE_SELF_PACK_TEST=OFF
           [[ $toolchain == x86_64-w64-mingw32  ]] && export UPX_CONFIG_DISABLE_SELF_PACK_TEST=OFF
           echo "UPX_CONFIG_DISABLE_SELF_PACK_TEST=$UPX_CONFIG_DISABLE_SELF_PACK_TEST" >> $GITHUB_ENV

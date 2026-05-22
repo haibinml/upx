@@ -30,8 +30,6 @@ jobs:
     name: Rebuild stubs
     runs-on: ubuntu-latest
     container: ubuntu:24.04 # provides glibc-2.39
-    #container: debian:12-slim # also works; provides glibc-2.36
-    #container: debian:testing-slim # also works; currently provides glibc-2.38
     steps:
       - run: uname -a; pwd; id; umask
       - name: Install packages
@@ -184,6 +182,7 @@ jobs:
       - run: gcc     -E -x c   -dM /dev/null | LC_ALL=C sort # list predefined macros for C
       - run: g++     -E -x c++ -dM /dev/null | LC_ALL=C sort # list predefined macros for C++
       - run: make build/extra/clang/all
+      - run: make build/extra/clang-std-cxx20/all
       - run: make build/extra/gcc/all
       - run: make build/extra/gcc-std-cxx20/all
       - run: ls -l build/*/*/*/upx* || true
@@ -532,8 +531,8 @@ jobs:
           # { name: windows-11-arm64x,  os: windows-11-arm, vsversion: 2022, vsarch: arm64, use_arm64x: true }
           - { name: windows-2022-amd64, os: windows-2022,   vsversion: 2022, vsarch: amd64 }
           - { name: windows-2022-i386,  os: windows-2022,   vsversion: 2022, vsarch: amd64_x86 }
-          # { name: windows-2026-amd64, os: windows-2025-vs2026, vsversion: 2026, vsarch: amd64 }
-          # { name: windows-2026-i386,  os: windows-2025-vs2026, vsversion: 2026, vsarch: amd64_x86 }
+          - { name: windows-2026-amd64, os: windows-2025-vs2026, vsversion: 2026, vsarch: amd64 }
+          - { name: windows-2026-i386,  os: windows-2025-vs2026, vsversion: 2026, vsarch: amd64_x86 }
     name: ${{ format('{0}', matrix.name) }}
     runs-on: ${{ matrix.os }}
     steps:
@@ -560,6 +559,8 @@ jobs:
           else
             exit 1
           fi
+      - run: echo "CXXFLAGS=$CXXFLAGS -DDOCTEST_CONFIG_DISABLE" >> $GITHUB_ENV
+        if: ${{ contains(matrix.name, 'windows-2026') }}
       - run: make build/debug
       - run: make build/release
       - run: shopt -s globstar; ls -ld build/**/upx.exe || true
@@ -614,11 +615,11 @@ jobs:
           - { name: arm64ec-win64-vs2022, os: windows-2022, vsversion: 2022, vsarch: amd64_arm64, cl_machine_flags: -arm64EC, link_machine_flags: '/machine:arm64ec' }
           # { name: arm64x-win64-vs2022,  os: windows-2022, vsversion: 2022, vsarch: amd64_arm64, cl_machine_flags: -arm64EC, link_machine_flags: '/machine:arm64x' }
           - { name: i386-win32-vs2022,    os: windows-2022, vsversion: 2022, vsarch: amd64_x86 }
-          # { name: amd64-win64-vs2026,   os: windows-2025-vs2026, vsversion: 18.0, vsarch: amd64 }
-          # { name: arm64-win64-vs2026,   os: windows-2025-vs2026, vsversion: 18.0, vsarch: amd64_arm64 }
-          # { name: arm64ec-win64-vs2026, os: windows-2025-vs2026, vsversion: 18.0, vsarch: amd64_arm64, cl_machine_flags: -arm64EC, link_machine_flags: '/machine:arm64ec' }
+          - { name: amd64-win64-vs2026,   os: windows-2025-vs2026, vsversion: 18.0, vsarch: amd64 }
+          - { name: arm64-win64-vs2026,   os: windows-2025-vs2026, vsversion: 18.0, vsarch: amd64_arm64 }
+          - { name: arm64ec-win64-vs2026, os: windows-2025-vs2026, vsversion: 18.0, vsarch: amd64_arm64, cl_machine_flags: -arm64EC, link_machine_flags: '/machine:arm64ec' }
           # { name: arm64x-win64-vs2026,  os: windows-2025-vs2026, vsversion: 18.0, vsarch: amd64_arm64, cl_machine_flags: -arm64EC, link_machine_flags: '/machine:arm64x' }
-          # { name: i386-win32-vs2026,    os: windows-2025-vs2026, vsversion: 18.0, vsarch: amd64_x86 }
+          - { name: i386-win32-vs2026,    os: windows-2025-vs2026, vsversion: 18.0, vsarch: amd64_x86 }
     name: ${{ format('windows-bh {0}', matrix.name) }}
     runs-on: ${{ matrix.os }}
     env:
@@ -673,6 +674,7 @@ jobs:
           cat .GITREV.txt
           set /p GITREV=<.GITREV.txt
           set UPX_DEFS=-DUPX_CONFIG_DISABLE_WSTRICT=0 -DUPX_CONFIG_DISABLE_WERROR=0 -DWITH_THREADS=0 -DWITH_BZIP2=0 -DWITH_ZSTD=0
+          set UPX_DEFS=%UPX_DEFS% -DDOCTEST_CONFIG_DISABLE
           set UPX_LIBS=%BDIR%\ucl\ucl.lib %BDIR%\zlib\zlib.lib
           @rem set UPX_LIBS=%BDIR%\bzip2\bzip2.lib %BDIR%\ucl\ucl.lib %BDIR%\zlib\zlib.lib %BDIR%\zstd\zstd.lib
           set sources=%s%\*.cpp %s%\check\*.cpp %s%\compress\*.cpp %s%\console\*.cpp %s%\filter\*.cpp %s%\util\*.cpp
