@@ -187,6 +187,11 @@ void assertFailed(const char *expr, const char *file, int line, const char *func
     std::terminate();
 }
 
+void assertFailed(int e, const char *expr, const char *file, int line, const char *func) noexcept {
+    if very_unlikely (!e)
+        assertFailed(expr, file, line, func);
+}
+
 void throwAssertFailed(const char *expr, const char *file, int line, const char *func) {
     if (opt->debug.debug_level >= 1) {
         throwCantPack("corrupted file; details: %s (%s: %s: %d)", expr, file, func, line);

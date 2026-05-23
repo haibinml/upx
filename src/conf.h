@@ -476,8 +476,11 @@ inline void mem_clear(T (&array)[N]) noexcept DELETED_FUNCTION;
 #define ByteArray(var, n) Array(byte, var, (n))
 
 // assert_noexcept()
+noinline void assertFailed(int e, const char *expr, const char *file, int line,
+                           const char *func) noexcept;
 noreturn void assertFailed(const char *expr, const char *file, int line, const char *func) noexcept;
-noreturn void throwAssertFailed(const char *expr, const char *file, int line, const char *func);
+noreturn void throwAssertFailed(const char *expr, const char *file, int line, const char *func)
+    may_throw;
 #if defined(__clang__) || defined(__GNUC__)
 #undef assert
 #if DEBUG || 0
@@ -491,8 +494,10 @@ noreturn void throwAssertFailed(const char *expr, const char *file, int line, co
 #endif
 #define assert_noexcept(e)                                                                         \
     ((void) (__acc_cte(e) || (assertFailed(#e, __FILE__, __LINE__, __func__), 0)))
+#define assert_noexcept2(e) assertFailed(e, #e, __FILE__, __LINE__, __func__)
 #else
-#define assert_noexcept assert
+#define assert_noexcept  assert
+#define assert_noexcept2 assert
 #endif
 
 //
