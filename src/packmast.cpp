@@ -233,11 +233,11 @@ PackerBase *PackMaster::visitAllPackers(visit_func_t func, InputFile *f, const O
     //
     // misc
     //
-    VISIT(PackCpm86); // cpm86/cmd
     VISIT(PackTos);   // atari/tos
     VISIT(PackPs1);   // ps1/exe
     VISIT(PackSys);   // dos/sys
     VISIT(PackCom);   // dos/com
+    VISIT(PackCpm86); // cpm86/cmd
 
     return nullptr;
 #undef VISIT

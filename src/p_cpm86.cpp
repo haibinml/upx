@@ -202,7 +202,7 @@ tribool PackCpm86::canPack() {
 **************************************************************************/
 
 // run-time allocation size (paragraphs) for a group, mirroring emu2's loader.
-unsigned PackCpm86::allocParas(const Group *g, unsigned type, bool model_8080) {
+/*static*/ unsigned PackCpm86::allocParas(const Group *g, unsigned type, bool model_8080) {
     if (!g)
         return 0;
     unsigned par = g->max ? g->max : g->length;

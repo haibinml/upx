@@ -1355,7 +1355,7 @@ void PeFile::processExports(Export *xport) { // pass1
     soexport = ALIGN_UP(xport->getsize(), 4u);
     mb_oexport.alloc(soexport);
     mb_oexport.clear();
-    oexport = mb_oexport;
+    oexport = SPAN_S_MAKE(byte, mb_oexport); // => now is a SPAN_S
 }
 
 void PeFile::processExports(Export *xport, unsigned newoffs) { // pass2
