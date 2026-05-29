@@ -418,12 +418,10 @@ void PackCpm86::pack(OutputFile *fo) {
         set_le16(d + 5, code_alloc_ip);   // min = inflated (room to stage code + copyr)
         set_le16(d + 7, code_alloc_ip);   // max
         d = hdr + slot++ * GD_SIZE;
-        d[0] = GT_DATA;     // length 0; max sized to the decompress buffer (the loader
-        set_le16(d + 1, 0); // gives 64K when max==0, else exactly max paragraphs)
-        if (data_alloc_ip < 0x1000) {
-            set_le16(d + 5, data_alloc_ip);
-            set_le16(d + 7, data_alloc_ip);
-        }
+        d[0] = GT_DATA; // length 0; the stub fills it from the decompressed image
+        set_le16(d + 1, 0);
+        set_le16(d + 5, data_alloc_ip);
+        set_le16(d + 7, data_alloc_ip);
         if (grp_extra) {
             d = hdr + slot++ * GD_SIZE;
             d[0] = GT_EXTRA;
