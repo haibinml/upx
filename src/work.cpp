@@ -477,6 +477,8 @@ int do_files(int i, int argc, char *argv[]) may_throw {
         UiPacker::uiListTotal();
     else if (opt->cmd == CMD_FILEINFO)
         UiPacker::uiFileInfoTotal();
+    else
+        throwInternalError("invalid command");
     return 0;
 }
 
