@@ -17,7 +17,6 @@ env:
   UPX_CMAKE_CONFIG_FLAGS: -G "Unix Makefiles" -Wdev --warn-uninitialized
   #UPX_CMAKE_CONFIG_FLAGS: -G Ninja -Wdev --warn-uninitialized
   UPX_CONFIG_HAVE_WORKING_BUILD_RPATH: 'ON'
-  #UPX_DEBUG_DOCTEST_DISABLE: 1
   UPX_DEBUG_TEST_FLOAT_DIVISION_BY_ZERO: 1
   UPX_DEBUG_TEST_LIBC_QSORT: 1
   ZSTD_CLEVEL: 17
@@ -57,7 +56,7 @@ jobs:
       CMAKE_SYSTEM_NAME: Windows
       UPX_CONFIG_DISABLE_CXX_STANDARD: 'ON'
       cxxflags: -std=gnu++2b
-      xflags: -D_WIN32_WINNT=0x0601
+      #xflags: -D_WIN32_WINNT=0x0601
       #xflags: -D_WIN32_WINNT=0x0601 -DDOCTEST_CONFIG_DISABLE
 
     name: ${{ format('{0} {1}', matrix.name, matrix.llvm_version) }}
@@ -85,6 +84,11 @@ jobs:
           cd ./llvm-mingw*/bin
           echo "PATH=$PWD:$PATH" >> $GITHUB_ENV
           echo "$PWD"; ls -laF
+          x=${PWD/#\/c/C:}
+          echo "PATH=$x:$PATH" >> $GITHUB_ENV
+          # set CMAKE_MAKE_PROGRAM
+          m=$(command -v make)
+          echo "CMAKE_MAKE_PROGRAM=$m" >> $GITHUB_ENV
 
       - run: cd ~/.local/bin/llvm-mingw*/. && echo "$PWD" && ls -laF
       # run: cd ~/.local/bin/llvm-mingw*/. && echo "$PWD" && tree -sF -d --du
@@ -135,40 +139,62 @@ jobs:
           done
           (cd build && cp -v -ai --parents */*/*/upx.exe "../tmp/artifact/$N")
           (cd build && shopt -s globstar && cp -v -ai --parents **/dt_cxxlib.* "../tmp/artifact/$N")
-          if command -v hardlink >/dev/null; then (cd "tmp/artifact/$N" && hardlink .) fi
-          (cd tmp/artifact && tar --sort=name --zstd -cf "$N.tar.zst" "$N" && rm -rf "./$N" && ls -la && zstd -tq "$N.tar.zst")
+          #if command -v hardlink >/dev/null; then (cd "tmp/artifact/$N" && hardlink .) fi
+          #(cd tmp/artifact && tar --sort=name --zstd -cf "$N.tar.zst" "$N" && rm -rf "./$N" && ls -la && zstd -tq "$N.tar.zst")
+          (cd tmp/artifact && tar --sort=name --gzip -cf "$N.tar.gz" "$N" && rm -rf "./$N" && ls -la && gzip -tq "$N.tar.gz")
           echo "artifact_name=$N" >> $GITHUB_ENV
       - name: ${{ format('Upload artifact {0}', env.artifact_name) }}
         uses: actions/upload-artifact@v6
         with: { name: '${{ env.artifact_name }}', path: tmp/artifact }
 
-      - name: 'Run ctest tests aarch64 with Wine'
+      - name: 'Run ctest tests aarch64'
         run: |
-          UPX_DEBUG_DOCTEST_VERBOSE=1 $upx_exe_runner ./build/llvm-mingw/aarch64-w64-mingw32-clang/debug/upx.exe --sysinfo -vv
-          UPX_DEBUG_DOCTEST_VERBOSE=1 $upx_exe_runner ./build/llvm-mingw/aarch64-w64-mingw32-clang/release/upx.exe --sysinfo -vv
+          UPX_DEBUG_DOCTEST_VERBOSE=1 ./build/llvm-mingw/aarch64-w64-mingw32-clang/debug/upx.exe --sysinfo -vv
+          UPX_DEBUG_DOCTEST_VERBOSE=1 ./build/llvm-mingw/aarch64-w64-mingw32-clang/release/upx.exe --sysinfo -vv
           make UPX_XTARGET=llvm-mingw/aarch64-w64-mingw32-clang xtarget/all+test
           ls -ld ./build/*/*/*/XTesting/*/* || true
           rm -rf ./build/*/*/*/XTesting/*/*
 
-      - name: 'Run ctest tests aarch64 static with Wine'
+      - name: 'Run ctest tests aarch64 static'
         run: |
-          UPX_DEBUG_DOCTEST_VERBOSE=1 $upx_exe_runner ./build/llvm-mingw/aarch64-w64-mingw32-clang-static/debug/upx.exe --sysinfo -vv
-          UPX_DEBUG_DOCTEST_VERBOSE=1 $upx_exe_runner ./build/llvm-mingw/aarch64-w64-mingw32-clang-static/release/upx.exe --sysinfo -vv
+          UPX_DEBUG_DOCTEST_VERBOSE=1 ./build/llvm-mingw/aarch64-w64-mingw32-clang-static/debug/upx.exe --sysinfo -vv
+          UPX_DEBUG_DOCTEST_VERBOSE=1 ./build/llvm-mingw/aarch64-w64-mingw32-clang-static/release/upx.exe --sysinfo -vv
           make UPX_XTARGET=llvm-mingw/aarch64-w64-mingw32-clang-static xtarget/all+test
           ls -ld ./build/*/*/*/XTesting/*/* || true
           rm -rf ./build/*/*/*/XTesting/*/*
 
-      - name: 'Run test suite under Wine'
+      - name: 'Run ctest tests arm64ec'
+        #if: ${{ matrix.use_arm64ec }}
         if: false
         run: |
-          export upx_exe_runner="wine"
+          UPX_DEBUG_DOCTEST_VERBOSE=1 ./build/llvm-mingw/arm64ec-w64-mingw32-clang/debug/upx.exe --sysinfo -vv
+          UPX_DEBUG_DOCTEST_VERBOSE=1 ./build/llvm-mingw/arm64ec-w64-mingw32-clang/release/upx.exe --sysinfo -vv
+          make UPX_XTARGET=llvm-mingw/arm64ec-w64-mingw32-clang xtarget/all+test
+          ls -ld ./build/*/*/*/XTesting/*/* || true
+          rm -rf ./build/*/*/*/XTesting/*/*
+
+      - name: 'Run ctest tests arm64ec static'
+        if: ${{ matrix.use_arm64ec }}
+        run: |
+          UPX_DEBUG_DOCTEST_VERBOSE=1 ./build/llvm-mingw/arm64ec-w64-mingw32-clang-static/debug/upx.exe --sysinfo -vv
+          UPX_DEBUG_DOCTEST_VERBOSE=1 ./build/llvm-mingw/arm64ec-w64-mingw32-clang-static/release/upx.exe --sysinfo -vv
+          make UPX_XTARGET=llvm-mingw/arm64ec-w64-mingw32-clang-static xtarget/all+test
+          ls -ld ./build/*/*/*/XTesting/*/* || true
+          rm -rf ./build/*/*/*/XTesting/*/*
+
+      - name: 'Run test suite'
+        run: |
           export upx_exe=./upx.exe
           export upx_testsuite_SRCDIR="$(readlink -en ../deps/upx-testsuite)"
-          export UPX_DEBUG_DOCTEST_DISABLE=1
-          jobs="i686-w64-mingw32-clang-static/debug i686-w64-mingw32-clang-static/release"
-          jobs="$jobs x86_64-w64-mingw32-clang-static/debug x86_64-w64-mingw32-clang-static/release"
-          echo "===== parallel jobs: $jobs"
-          parallel -kv --lb 'cd build/llvm-mingw/{} && bash ../../../../misc/testsuite/upx_testsuite_1.sh' ::: $jobs || true
+          #export UPX_DEBUG_DOCTEST_DISABLE=1
+          (cd build/llvm-mingw/aarch64-w64-mingw32-clang/debug          && bash ../../../../misc/testsuite/upx_testsuite_1.sh)
+          (cd build/llvm-mingw/aarch64-w64-mingw32-clang/release        && bash ../../../../misc/testsuite/upx_testsuite_1.sh)
+          (cd build/llvm-mingw/aarch64-w64-mingw32-clang-static/debug   && bash ../../../../misc/testsuite/upx_testsuite_1.sh)
+          (cd build/llvm-mingw/aarch64-w64-mingw32-clang-static/release && bash ../../../../misc/testsuite/upx_testsuite_1.sh)
+          if [[ "${{ matrix.use_arm64ec }}" == "true" ]]; then true;
+          (cd build/llvm-mingw/arm64ec-w64-mingw32-clang-static/debug   && bash ../../../../misc/testsuite/upx_testsuite_1.sh)
+          (cd build/llvm-mingw/arm64ec-w64-mingw32-clang-static/release && bash ../../../../misc/testsuite/upx_testsuite_1.sh)
+          fi
           ls -ld ./build/*/*/*/tmp-upx-testsuite* || true
           rm -rf ./build/*/*/*/tmp-upx-testsuite*
 

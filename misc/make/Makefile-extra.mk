@@ -354,6 +354,7 @@ __add_cmake_config = $(and $($1),-D$1="$($1)")
 
 # pass common CMake settings
 UPX_CMAKE_CONFIG_FLAGS += $(call __add_cmake_config,CMAKE_INSTALL_PREFIX)
+UPX_CMAKE_CONFIG_FLAGS += $(call __add_cmake_config,CMAKE_MAKE_PROGRAM)
 UPX_CMAKE_CONFIG_FLAGS += $(call __add_cmake_config,CMAKE_VERBOSE_MAKEFILE)
 # pass common CMake toolchain settings
 UPX_CMAKE_CONFIG_FLAGS += $(call __add_cmake_config,CMAKE_ADDR2LINE)
