@@ -1589,7 +1589,7 @@ void PackMachBase<T>::unpack(OutputFile *fo)
         if (mhdri.ncmds != mhdr->ncmds)
             throwCantUnpack("file header corrupted");
         upx_uint64_t cpr_mod_init_func(0);
-                TE32 unc_mod_init_func; *(int *)&unc_mod_init_func = 0;
+                TE32 unc_mod_init_func = {}; // *(int *)&unc_mod_init_func = 0;
         Mach_segment_command const *rc = rawmseg;
         rc = (Mach_segment_command const *)(rc->cmdsize + (char const *)rc);
         sc = (Mach_segment_command const *)(sc->cmdsize + (char const *)sc);

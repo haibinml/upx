@@ -112,14 +112,14 @@ jobs:
           export CC="arm64ec-w64-mingw32-clang $xflags" CXX="arm64ec-w64-mingw32-clang++ $xflags $cxxflags"
           export UPX_CONFIG_DISABLE_SELF_PACK_TEST=ON
           export UPX_CONFIG_DISABLE_SAVE_TEMPS=ON
-          make UPX_XTARGET=llvm-mingw/arm64ec-w64-mingw32-clang xtarget/all || true
+          make UPX_XTARGET=llvm-mingw/arm64ec-w64-mingw32-clang xtarget/all
       - name: 'Build clang arm64ec static'
         if: ${{ matrix.use_arm64ec }}
         run: |
           export CC="arm64ec-w64-mingw32-clang -static $xflags" CXX="arm64ec-w64-mingw32-clang++ -static $xflags $cxxflags"
           export UPX_CONFIG_DISABLE_SELF_PACK_TEST=ON
           export UPX_CONFIG_DISABLE_SAVE_TEMPS=ON
-          make UPX_XTARGET=llvm-mingw/arm64ec-w64-mingw32-clang-static xtarget/all || true
+          make UPX_XTARGET=llvm-mingw/arm64ec-w64-mingw32-clang-static xtarget/all
 
       - run: ls -l build/*/*/*/upx* || true
       - run: llvm-size build/*/*/*/upx* || true
