@@ -376,6 +376,7 @@ UPX_CMAKE_CONFIG_FLAGS += $(call __add_cmake_config,CMAKE_CXX_COMPILER_RANLIB)
 # pass common CMake cross compilation settings
 UPX_CMAKE_CONFIG_FLAGS += $(call __add_cmake_config,CMAKE_SYSTEM_NAME)
 UPX_CMAKE_CONFIG_FLAGS += $(call __add_cmake_config,CMAKE_SYSTEM_PROCESSOR)
+UPX_CMAKE_CONFIG_FLAGS += $(call __add_cmake_config,CMAKE_CROSSCOMPILING)
 UPX_CMAKE_CONFIG_FLAGS += $(call __add_cmake_config,CMAKE_CROSSCOMPILING_EMULATOR)
 # pass UPX config options; see CMakeLists.txt
 UPX_CMAKE_CONFIG_FLAGS += $(call __add_cmake_config,UPX_CONFIG_DISABLE_GITREV)

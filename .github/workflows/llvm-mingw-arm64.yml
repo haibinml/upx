@@ -54,6 +54,7 @@ jobs:
 
     env:
       CMAKE_SYSTEM_NAME: Windows
+      CMAKE_CROSSCOMPILING: 'OFF'
       UPX_CONFIG_DISABLE_CXX_STANDARD: 'ON'
       cxxflags: -std=gnu++2b
       #xflags: -D_WIN32_WINNT=0x0601
@@ -82,7 +83,7 @@ jobs:
           rm ./llvm-mingw*.zip
           # update PATH
           cd ./llvm-mingw*/bin
-          echo "PATH=$PWD:$PATH" >> $GITHUB_ENV
+          #echo "PATH=$PWD:$PATH" >> $GITHUB_ENV
           echo "$PWD"; ls -laF
           x=${PWD/#\/c/C:}
           echo "PATH=$x:$PATH" >> $GITHUB_ENV

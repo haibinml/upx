@@ -472,6 +472,8 @@ if(NOT CMAKE_CROSSCOMPILING OR CMAKE_CROSSCOMPILING_EMULATOR)
         include("${CMAKE_CURRENT_SOURCE_DIR}/misc/cmake/self_pack_test.cmake")
         upx_self_pack_test()
     endif()
+else()
+    message(STATUS "CMAKE_CROSSCOMPILING = ON")
 endif()
 
 endif() # UPX_CONFIG_CMAKE_DISABLE_TEST
