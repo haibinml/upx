@@ -117,6 +117,7 @@ jobs:
           echo "PATH=$PWD:$PATH" >> $GITHUB_ENV
           echo "$PWD"; ls -laF
 
+      - run: ls -laF "$HOME" "$GITHUB_WORKSPACE" || true
       - run: cd ~/.local/bin/llvm-mingw*/. && echo "$PWD" && ls -laF
       - run: cd ~/.local/bin/llvm-mingw*/. && echo "$PWD" && tree -sF -d --du
       # run: cd ~/.local/bin/llvm-mingw*/. && echo "$PWD" && tree -sF    --du
