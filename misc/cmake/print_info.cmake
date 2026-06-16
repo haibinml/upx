@@ -53,6 +53,13 @@ function(upx_print_info)
         upx_print_var(CMAKE_${lang}_COMPILER_TARGET)
     endforeach()
 
+    # install
+    upx_print_var(CMAKE_INSTALL_PREFIX)
+    upx_print_var(CMAKE_INSTALL_BINDIR)
+    upx_print_var(CMAKE_INSTALL_LIBDIR)
+    upx_print_var(CMAKE_INSTALL_DOCDIR)
+    upx_print_var(CMAKE_INSTALL_MANDIR)
+
     # misc
     upx_print_var(CMAKE_BUILD_WITH_INSTALL_RPATH CMAKE_SKIP_RPATH CMAKE_SKIP_BUILD_RPATH CMAKE_SKIP_INSTALL_RPATH)
     upx_print_var(CMAKE_INTERPROCEDURAL_OPTIMIZATION CMAKE_POSITION_INDEPENDENT_CODE)

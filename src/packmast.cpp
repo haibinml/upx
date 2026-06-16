@@ -94,6 +94,8 @@ PackMaster::~PackMaster() noexcept {
 **************************************************************************/
 
 static noinline tribool try_can_pack(PackerBase *pb, void *user) may_throw {
+    assert_noexcept(pb != nullptr);
+    assert_noexcept(user != nullptr);
     InputFile *f = (InputFile *) user;
     try {
         pb->initPackHeader();
@@ -114,6 +116,8 @@ static noinline tribool try_can_pack(PackerBase *pb, void *user) may_throw {
 }
 
 static noinline tribool try_can_unpack(PackerBase *pb, void *user) may_throw {
+    assert_noexcept(pb != nullptr);
+    assert_noexcept(user != nullptr);
     InputFile *f = (InputFile *) user;
     try {
         pb->initPackHeader();
@@ -138,6 +142,8 @@ static noinline tribool try_can_unpack(PackerBase *pb, void *user) may_throw {
 /*static*/
 PackerBase *PackMaster::visitAllPackers(visit_func_t func, InputFile *f, const Options *o,
                                         void *user) may_throw {
+    assert_noexcept(o != nullptr);
+
 #define VISIT(Klass)                                                                               \
     do {                                                                                           \
         static_assert(std::is_class_v<Klass>);                                                     \

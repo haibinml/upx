@@ -152,6 +152,7 @@ struct PackerNames final {
     const Options *o = nullptr;
 
     void add(const PackerBase *pb) {
+        assert_noexcept(pb != nullptr);
         assert_noexcept(names_count < MAX_NAMES);
         Entry &e = names_array[names_count];
         names[names_count++] = &e;
@@ -179,6 +180,8 @@ struct PackerNames final {
         upx_gnomesort(e.filters, e.filters_count, sizeof(e.filters[0]), ne32_compare);
     }
     static tribool visit(PackerBase *pb, void *user) {
+        assert_noexcept(pb != nullptr);
+        assert_noexcept(user != nullptr);
         NO_fprintf(stderr, "visit %s\n", pb->getFullName(nullptr));
         PackerNames *self = (PackerNames *) user;
         self->add(pb);

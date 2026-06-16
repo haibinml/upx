@@ -489,11 +489,6 @@ upx_cmake_include_hook(7_install)
 
 if(NOT UPX_CONFIG_CMAKE_DISABLE_INSTALL)
 
-# installation prefix and directories
-if(NOT CMAKE_INSTALL_PREFIX)
-    #message(FATAL_ERROR "ERROR: CMAKE_INSTALL_PREFIX is not defined")
-    message(WARNING "WARNING: CMAKE_INSTALL_PREFIX is not defined")
-endif()
 # install files
 if(CMAKE_INSTALL_PREFIX AND DEFINED CMAKE_INSTALL_BINDIR)
     install(TARGETS upx DESTINATION "${CMAKE_INSTALL_BINDIR}")
@@ -502,6 +497,9 @@ if(CMAKE_INSTALL_PREFIX AND DEFINED CMAKE_INSTALL_BINDIR)
         DESTINATION "${CMAKE_INSTALL_DOCDIR}"
     )
     install(FILES doc/upx.1 DESTINATION "${CMAKE_INSTALL_MANDIR}/man1")
+else()
+    #message(FATAL_ERROR "ERROR: CMAKE_INSTALL_PREFIX is not defined")
+    message(WARNING "WARNING: CMAKE_INSTALL_PREFIX is not defined")
 endif()
 
 endif() # UPX_CONFIG_CMAKE_DISABLE_INSTALL

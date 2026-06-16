@@ -68,6 +68,7 @@ jobs:
       - run: ulimit -a || true
       - name: ${{ format('Check out {0} source code', github.ref_name) }}
         run: |
+          git config --global core.autocrlf false
           git config --global --add safe.directory '*' # needed when running in a container
           git clone --branch "$GITHUB_REF_NAME" --depth 1 "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" .
           git submodule update --init
@@ -95,6 +96,7 @@ jobs:
           echo "CMAKE_MAKE_PROGRAM=$m" >> $GITHUB_ENV
 
       - run: ls -laF "$HOME" "$GITHUB_WORKSPACE" || true
+      - run: cat "$HOME/.gitconfig" || true
       - run: cd ~/.local/bin/llvm-mingw*/. && echo "$PWD" && ls -laF
       # run: cd ~/.local/bin/llvm-mingw*/. && echo "$PWD" && tree -sF -d --du
       # run: cd ~/.local/bin/llvm-mingw*/. && echo "$PWD" && tree -sF    --du
