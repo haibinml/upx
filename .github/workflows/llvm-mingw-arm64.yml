@@ -47,10 +47,10 @@ jobs:
             llvm_version: 21.1.8
             use_arm64ec: true
             url: 'https://github.com/mstorsjo/llvm-mingw/releases/download/20251216/llvm-mingw-20251216-ucrt-aarch64.zip'
-          - name: llvm-mingw-20260602-ucrt
-            llvm_version: 22.1.7
+          - name: llvm-mingw-20260616-ucrt
+            llvm_version: 22.1.8
             use_arm64ec: true
-            url: 'https://github.com/mstorsjo/llvm-mingw/releases/download/20260602/llvm-mingw-20260602-ucrt-aarch64.zip'
+            url: 'https://github.com/mstorsjo/llvm-mingw/releases/download/20260616/llvm-mingw-20260616-ucrt-aarch64.zip'
 
     env:
       CMAKE_SYSTEM_NAME: Windows

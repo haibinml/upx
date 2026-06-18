@@ -28,7 +28,7 @@
 #include "conf.h"
 #include "packhead.h"
 #include "filter.h" // for ft->unfilter()
-#include "packer.h"
+#include "packer.h" // for Packer::isValidFormat
 
 /*************************************************************************
 // PackHeader
@@ -257,9 +257,9 @@ bool PackHeader::decodePackHeaderFromBuf(SPAN_S(const byte) buf, int blen) {
         if (blen < off_filter + 1)
             throwCantUnpack("header corrupted 9");
         filter = p[off_filter];
-    } else if ((level & 128) == 0)
+    } else if ((level & 128) == 0) {
         filter = 0;
-    else {
+    } else {
         // convert old flags to new filter id
         level &= 127;
         if (format == UPX_F_DOS_COM || format == UPX_F_DOS_SYS)
@@ -296,18 +296,15 @@ bool PackHeader::decodePackHeaderFromBuf(SPAN_S(const byte) buf, int blen) {
 // ph method util
 **************************************************************************/
 
-bool ph_is_forced_method(int method) noexcept // predicate
-{
+bool ph_is_forced_method(int method) noexcept { // predicate
     return (method >> 24) == -0x80;
 }
 
-int ph_force_method(int method) noexcept // mark as forced
-{
+int ph_force_method(int method) noexcept { // mark as forced
     return method | (0x80u << 24);
 }
 
-int ph_forced_method(int method) noexcept // extract the forced method
-{
+int ph_forced_method(int method) noexcept { // extract the forced method
     if (ph_is_forced_method(method))
         method &= ~(0x80u << 24);
     assert_noexcept(method > 0);
