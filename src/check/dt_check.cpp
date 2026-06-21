@@ -291,6 +291,16 @@ static_assert(alignof(upx_int128_t) <= 16, "");
 static_assert(alignof(upx_uint128_t) <= 16, "");
 #endif
 
+static_assert(sizeof(void *) == sizeof(char *), "");
+static_assert(sizeof(void *) == sizeof(byte *), "");
+static_assert(sizeof(void *) == sizeof(short *), "");
+static_assert(sizeof(void *) == sizeof(int *), "");
+static_assert(sizeof(void *) == sizeof(long *), "");
+static_assert(sizeof(void *) == sizeof(long long *), "");
+static_assert(sizeof(void *) == sizeof(float *), "");
+static_assert(sizeof(void *) == sizeof(double *), "");
+static_assert(sizeof(void *) == sizeof(void (*)(void)), "");
+
 /*************************************************************************
 // compile-time checks
 **************************************************************************/
@@ -342,7 +352,7 @@ static_assert((wchar_t) -1 > 0);
 namespace {
 
 template <class T>
-struct CheckIntegral {
+struct CheckIntegral final {
     // UPX extras
     static_assert(upx_is_integral<T>::value);
     static_assert(upx_is_integral_v<T>);
@@ -484,7 +494,7 @@ struct CheckIntegral {
 };
 
 template <class T>
-struct CheckAlignment {
+struct CheckAlignment final {
     static noinline void check() noexcept {
         COMPILE_TIME_ASSERT_ALIGNED1(T)
         struct alignas(1) Test1 {
@@ -509,7 +519,7 @@ struct CheckAlignment {
 };
 
 template <class T>
-struct TestBELE {
+struct TestBELE final {
     static_assert(upx::is_same_any_v<T, BE16, BE32, BE64, LE16, LE32, LE64>);
     static_assert(
         upx::is_same_any_v<typename T::integral_conversion_type, upx_uint32_t, upx_uint64_t>);
@@ -687,7 +697,7 @@ struct TestBELE {
 };
 
 template <class T, bool T_is_signed>
-struct CheckSignedness {
+struct CheckSignedness final {
     static_assert(std::is_integral_v<T>);
     static_assert(std::is_signed_v<T> == T_is_signed);
     static_assert(std::is_unsigned_v<T> == !T_is_signed);
@@ -712,7 +722,7 @@ struct CheckSignedness {
 };
 
 template <class A, class B>
-struct CheckTypePair {
+struct CheckTypePair final {
     static_assert(std::is_integral_v<A>);
     static_assert(std::is_integral_v<B>);
     static_assert(std::is_signed_v<A>);
@@ -729,7 +739,7 @@ struct CheckTypePair {
 };
 
 template <class A, class B>
-struct TestNoAliasingStruct { // check working -fno-strict-aliasing
+struct TestNoAliasingStruct final { // check working -fno-strict-aliasing
     static noinline bool test(A *a, B *b) noexcept {
         *a = 0;
         *b = 0;
@@ -743,7 +753,7 @@ static forceinline bool testNoAliasing(A *a, B *b) noexcept {
 }
 
 template <class T>
-struct TestIntegerWrap { // check working -fno-strict-overflow
+struct TestIntegerWrap final { // check working -fno-strict-overflow
     static inline bool inc_gt(const T x) noexcept { return x + 1 > x; }
     static inline bool dec_lt(const T x) noexcept { return x - 1 < x; }
     static inline bool neg_eq(const T x) noexcept { return T(T(0) - x) == x; }
@@ -753,7 +763,7 @@ struct TestIntegerWrap { // check working -fno-strict-overflow
 // basic exception handling checks to early catch toolchain/qemu/wine/etc problems
 //
 
-struct TestDestructor {
+struct TestDestructor /*not_final*/ {
     explicit TestDestructor(int *pp, int vv) noexcept : p(pp), v(vv) {}
     virtual noinline ~TestDestructor() noexcept { *p = (*p << 2) + v; }
     int *p;
@@ -817,7 +827,7 @@ static noinline double u64_f64_sub_div(upx_uint64_t a, upx_uint64_t b) noexcept 
 }
 
 template <class Int, class Float>
-struct TestFloat {
+struct TestFloat final {
     static constexpr Int X = 1000000;
     static noinline Float div(Int a, Float f) noexcept { return a / f; }
     static noinline Float add_div(Int a, Int b, Float f) noexcept { return Float(a + b) / f; }
