@@ -41,7 +41,7 @@ class Filter;
 // clients: PackMaster, UiPacker
 **************************************************************************/
 
-class PackerBase {
+class PackerBase /*not_final*/ {
     friend class UiPacker;
 protected:
     explicit PackerBase(InputFile *f);
@@ -103,7 +103,7 @@ protected:
 // historically and really would benefit from a decomposition
 **************************************************************************/
 
-class Packer : public PackerBase {
+class Packer /*not_final*/ : public PackerBase {
 protected:
     explicit Packer(InputFile *f);
 

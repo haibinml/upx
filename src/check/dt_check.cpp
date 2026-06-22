@@ -356,7 +356,7 @@ struct CheckIntegral final {
     // UPX extras
     static_assert(upx_is_integral<T>::value);
     static_assert(upx_is_integral_v<T>);
-    struct TestT {
+    struct TestT final {
         T a;
         T x[2];
     };
@@ -497,11 +497,11 @@ template <class T>
 struct CheckAlignment final {
     static noinline void check() noexcept {
         COMPILE_TIME_ASSERT_ALIGNED1(T)
-        struct alignas(1) Test1 {
+        struct alignas(1) Test1 final {
             char a;
             T b;
         };
-        struct alignas(1) Test2 {
+        struct alignas(1) Test2 final {
             char a;
             T b[3];
         };
@@ -1505,7 +1505,7 @@ TEST_CASE("libc qsort") {
     if (!is_envvar_true("UPX_DEBUG_TEST_LIBC_QSORT"))
         return;
 
-    struct Elem {
+    struct Elem final {
         upx_uint16_t id;
         upx_uint16_t value;
         static int __acc_cdecl_qsort compare(const void *aa, const void *bb) noexcept {
