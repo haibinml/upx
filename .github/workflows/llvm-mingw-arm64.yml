@@ -194,6 +194,18 @@ jobs:
         run: |
           export upx_exe=./upx.exe
           export upx_testsuite_SRCDIR="$(readlink -en ../deps/upx-testsuite)"
+          if [[ 1 == 1 ]]; then true;
+          mkdir -p -v build/llvm-mingw/arm64-win64/release
+          (cd build/llvm-mingw/arm64-win64/release && curl -sS -L -O https://github.com/upx/upx-stubtools/releases/download/v20160918/upx-arm64_win64.zip && unzip upx-arm64_win64.zip)
+          (cd build/llvm-mingw/arm64-win64/release && ls -laF)
+          UPX_DEBUG_DOCTEST_VERBOSE=1 ./build/llvm-mingw/arm64-win64/release/upx.exe --sysinfo -vv
+          (cd build/llvm-mingw/arm64-win64/release && bash ../../../../misc/testsuite/upx_testsuite_1.sh)
+          fi
+          true
+      - name: 'Run test suite'
+        run: |
+          export upx_exe=./upx.exe
+          export upx_testsuite_SRCDIR="$(readlink -en ../deps/upx-testsuite)"
           #export UPX_DEBUG_DOCTEST_DISABLE=1
           (cd build/llvm-mingw/aarch64-w64-mingw32-clang/debug          && bash ../../../../misc/testsuite/upx_testsuite_1.sh)
           (cd build/llvm-mingw/aarch64-w64-mingw32-clang/release        && bash ../../../../misc/testsuite/upx_testsuite_1.sh)

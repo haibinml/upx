@@ -610,7 +610,7 @@ jobs:
           env -C build/release/Release upx_exe=./upx.exe bash "$PWD"/misc/testsuite/upx_testsuite_1.sh
 
   job-windows-bh-toolchains: # build "by hand" using cmd.exe
-    if: github.repository_owner == 'upx'
+    #if: github.repository_owner == 'upx'
     #if: false
     needs: [ job-cppflags ]
     strategy:
@@ -715,7 +715,7 @@ jobs:
           env -C build/$C/$B/upx upx_exe=./upx.exe bash "$PWD"/misc/testsuite/upx_testsuite_1.sh
 
   job-linux-zigcc: # uses cmake + make
-    if: github.repository_owner == 'upx'
+    #if: github.repository_owner == 'upx'
     needs: [ job-cppflags ]
     strategy:
       fail-fast: false
