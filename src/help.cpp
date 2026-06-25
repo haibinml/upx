@@ -138,7 +138,7 @@ struct PackerNames final {
     ~PackerNames() noexcept = default;
 
     static constexpr unsigned MAX_NAMES = 64; // arbitrary limit, increase as needed
-    struct Entry {
+    struct Entry final {
         const char *fname;
         const char *sname;
         unsigned methods_count;

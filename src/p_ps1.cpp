@@ -293,6 +293,8 @@ void PackPs1::buildLoader(const Filter *) {
     } else {
         if (M_IS_LZMA(ph.method) && buildPart2) {
             sz_lcpr = MemBuffer::getSizeForCompression(sz_lunc);
+            delete[] cprLoader;
+            cprLoader = nullptr;
             cprLoader = New(byte, sz_lcpr);
             int r = upx_compress(getLoader(), sz_lunc, cprLoader, &sz_lcpr, nullptr, M_NRV2B_8, 10,
                                  nullptr, nullptr);
