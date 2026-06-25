@@ -136,6 +136,7 @@ jobs:
           fi
           echo -e "CC=$CC\nCXX=$CXX" >> $GITHUB_ENV
       - run: ls -laF "$HOME" "$GITHUB_WORKSPACE" || true
+      - run: set -x; cat "$HOME/.gitconfig" || true
       - run: set -x; $CC --version; $CXX --version
       - run: $CC  -E -x c   -dM /dev/null | LC_ALL=C sort
       - run: $CXX -E -x c++ -dM /dev/null | LC_ALL=C sort

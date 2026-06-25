@@ -2041,7 +2041,7 @@ tribool PackMachBase<T>::canPack()
             // end of rawmseg. Require the two to agree.
             unsigned const segcmdsize = lc_seg_info[sizeof(Addr) >> 3].segcmdsize;
             unsigned const seccmdsize = lc_seg_info[sizeof(Addr) >> 3].seccmdsize;
-            if (segptr->nsects != (cmdsize - segcmdsize) / seccmdsize) {
+            if (seccmdsize == 0 || segptr->nsects != (cmdsize - segcmdsize) / seccmdsize) {
                 char buf[64]; snprintf(buf, sizeof(buf),
                     "bad LC_SEGMENT[%u].nsects %#x", j, (unsigned) segptr->nsects);
                 throwCantPack(buf);
